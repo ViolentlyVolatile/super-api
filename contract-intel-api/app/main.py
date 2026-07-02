@@ -61,7 +61,12 @@ def create_app() -> FastAPI:
     if _STATIC_DIR.is_dir():
         app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
-    @app.get("/health", tags=["Meta"], summary="Liveness probe (no auth)")
+    @app.api_route(
+        "/health",
+        methods=["GET", "HEAD"],
+        tags=["Meta"],
+        summary="Liveness probe (no auth)",
+    )
     async def health() -> dict:
         return {
             "status": "ok",
