@@ -6,11 +6,15 @@ Sources: USAspending.gov and SAM.gov (public domain US government data).
 """
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .routers import analytics, awards, opportunities, recompetes
+
+_STATIC_DIR = Path(__file__).parent / "static"
 
 DESCRIPTION = """
 Search **$700B+/year** of US federal contract activity through one clean JSON API.
@@ -52,6 +56,10 @@ def create_app() -> FastAPI:
     app.include_router(recompetes.router)
     app.include_router(analytics.router)
     app.include_router(opportunities.router)
+
+    # Public marketing assets (spotlight cards, logo). No auth.
+    if _STATIC_DIR.is_dir():
+        app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
     @app.get("/health", tags=["Meta"], summary="Liveness probe (no auth)")
     async def health() -> dict:
