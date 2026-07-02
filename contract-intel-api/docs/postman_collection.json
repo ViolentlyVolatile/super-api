@@ -1,0 +1,1296 @@
+{
+    "item": [
+        {
+            "name": "Awards",
+            "description": "",
+            "item": [
+                {
+                    "id": "611449ee-c33c-46ef-8be7-d06e339c1566",
+                    "name": "Search federal contract awards",
+                    "request": {
+                        "name": "Search federal contract awards",
+                        "description": {
+                            "content": "Search prime contract awards government-wide. Filter by keyword, NAICS,\nPSC, agency, vendor, action-date window, and award amount.",
+                            "type": "text/plain"
+                        },
+                        "url": {
+                            "path": [
+                                "v1",
+                                "awards",
+                                "search"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-api-key",
+                                "value": "{{apiKey}}"
+                            },
+                            {
+                                "disabled": true,
+                                "description": {
+                                    "content": "Only needed when calling through RapidAPI's proxy — leave disabled for direct calls.",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-rapidapi-proxy-secret",
+                                "value": ""
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"recipient_search_text\": \"<string>\",\n  \"start_date\": \"<date>\",\n  \"end_date\": \"<date>\",\n  \"min_amount\": \"<number>\",\n  \"max_amount\": \"<number>\",\n  \"sort\": \"Award Amount\",\n  \"order\": \"desc\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "21afdc9c-7f49-4c6a-849b-7314e43e5b7a",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "awards",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"recipient_search_text\": \"<string>\",\n  \"start_date\": \"<date>\",\n  \"end_date\": \"<date>\",\n  \"min_amount\": \"<number>\",\n  \"max_amount\": \"<number>\",\n  \"sort\": \"Award Amount\",\n  \"order\": \"desc\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"page\": \"<integer>\",\n  \"limit\": \"<integer>\",\n  \"results\": [\n    \"\",\n    \"\"\n  ],\n  \"has_next\": \"<boolean>\"\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "e6505f1d-7d97-4ca5-bae4-899569db8c7b",
+                            "name": "Validation Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "awards",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"recipient_search_text\": \"<string>\",\n  \"start_date\": \"<date>\",\n  \"end_date\": \"<date>\",\n  \"min_amount\": \"<number>\",\n  \"max_amount\": \"<number>\",\n  \"sort\": \"Award Amount\",\n  \"order\": \"desc\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                },
+                {
+                    "id": "d87e41d7-e4bb-40ea-b321-ab40c2855922",
+                    "name": "Full award detail",
+                    "request": {
+                        "name": "Full award detail",
+                        "description": {
+                            "content": "Full USAspending record for one award. Use the `internal_id` returned by\n/v1/awards/search (e.g. `CONT_AWD_...`).",
+                            "type": "text/plain"
+                        },
+                        "url": {
+                            "path": [
+                                "v1",
+                                "awards",
+                                ":internal_id"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "internal_id",
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    }
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-api-key",
+                                "value": "{{apiKey}}"
+                            },
+                            {
+                                "disabled": true,
+                                "description": {
+                                    "content": "Only needed when calling through RapidAPI's proxy — leave disabled for direct calls.",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-rapidapi-proxy-secret",
+                                "value": ""
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "6ba711b1-5c35-4e36-99d5-6c1d5b52c7c1",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "awards",
+                                        ":internal_id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "internal_id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"key_0\": 7668.445660428589\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "c8f5b755-ac28-4669-8bd2-95d107ebc146",
+                            "name": "Validation Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "awards",
+                                        ":internal_id"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "internal_id"
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Recompete Radar",
+            "description": "",
+            "item": [
+                {
+                    "id": "745f3f58-5192-4a80-8dd6-6fc98a77760c",
+                    "name": "Find contracts expiring soon (likely recompetes)",
+                    "request": {
+                        "name": "Find contracts expiring soon (likely recompetes)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "v1",
+                                "recompetes",
+                                "search"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-api-key",
+                                "value": "{{apiKey}}"
+                            },
+                            {
+                                "disabled": true,
+                                "description": {
+                                    "content": "Only needed when calling through RapidAPI's proxy — leave disabled for direct calls.",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-rapidapi-proxy-secret",
+                                "value": ""
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"months_ahead\": 12,\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"min_amount\": \"<number>\",\n  \"limit\": 50\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "2f2ed0ea-e415-4c02-8678-0105ab286c00",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "recompetes",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"months_ahead\": 12,\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"min_amount\": \"<number>\",\n  \"limit\": 50\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"page\": \"<integer>\",\n  \"limit\": \"<integer>\",\n  \"results\": [\n    \"\",\n    \"\"\n  ],\n  \"has_next\": \"<boolean>\"\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "a3c6791c-dd48-4e7f-be58-ffe9b08ce838",
+                            "name": "Validation Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "recompetes",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"months_ahead\": 12,\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"psc_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"min_amount\": \"<number>\",\n  \"limit\": 50\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Analytics",
+            "description": "",
+            "item": [
+                {
+                    "id": "9ff328b2-307c-4833-b52d-a8ab9801bc26",
+                    "name": "Spending totals grouped by a dimension",
+                    "request": {
+                        "name": "Spending totals grouped by a dimension",
+                        "description": {
+                            "content": "Who gets the money? Group federal contract spending by `naics`, `psc`,\n`awarding_agency`, or `recipient` -- optionally scoped by keyword, NAICS,\nagency, and fiscal year. Ideal for market sizing and competitor analysis.",
+                            "type": "text/plain"
+                        },
+                        "url": {
+                            "path": [
+                                "v1",
+                                "analytics",
+                                "spending"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-api-key",
+                                "value": "{{apiKey}}"
+                            },
+                            {
+                                "disabled": true,
+                                "description": {
+                                    "content": "Only needed when calling through RapidAPI's proxy — leave disabled for direct calls.",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-rapidapi-proxy-secret",
+                                "value": ""
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"dimension\": \"naics\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"fiscal_year\": \"<integer>\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "headerFamily": "json",
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "279469c8-9271-4260-8b1f-b96a1c715ed7",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "analytics",
+                                        "spending"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"dimension\": \"naics\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"fiscal_year\": \"<integer>\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"page\": \"<integer>\",\n  \"limit\": \"<integer>\",\n  \"results\": [\n    \"\",\n    \"\"\n  ],\n  \"has_next\": \"<boolean>\"\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "bababf3b-9c06-43b5-841b-16a7d4a4972b",
+                            "name": "Validation Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "analytics",
+                                        "spending"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"dimension\": \"naics\",\n  \"keywords\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"naics_codes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"agency\": \"<string>\",\n  \"fiscal_year\": \"<integer>\",\n  \"limit\": 25,\n  \"page\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Opportunities",
+            "description": "",
+            "item": [
+                {
+                    "id": "9b02bf03-c0de-4dda-95ff-9dc7fd66d3a7",
+                    "name": "Search live solicitations",
+                    "request": {
+                        "name": "Search live solicitations",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "v1",
+                                "opportunities",
+                                "search"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "Free-text title search",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "keywords",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "NAICS code, e.g. 336411",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "naics",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "p=Presolicitation, o=Solicitation, k=Combined Synopsis, r=Sources Sought, s=Special Notice",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "notice_type",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "e.g. SBA, 8A, WOSB, SDVOSBC",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "set_aside",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "How many days of postings to search",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "days_back",
+                                    "value": "30"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "limit",
+                                    "value": "25"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "offset",
+                                    "value": "0"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-api-key",
+                                "value": "{{apiKey}}"
+                            },
+                            {
+                                "disabled": true,
+                                "description": {
+                                    "content": "Only needed when calling through RapidAPI's proxy — leave disabled for direct calls.",
+                                    "type": "text/plain"
+                                },
+                                "key": "x-rapidapi-proxy-secret",
+                                "value": ""
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "22ac4737-9604-4711-853a-38dca1a5369b",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "opportunities",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "Free-text title search",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "keywords",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "NAICS code, e.g. 336411",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "naics",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "p=Presolicitation, o=Solicitation, k=Combined Synopsis, r=Sources Sought, s=Special Notice",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "notice_type",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "e.g. SBA, 8A, WOSB, SDVOSBC",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "set_aside",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "How many days of postings to search",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "days_back",
+                                            "value": "30"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "limit",
+                                            "value": "25"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "offset",
+                                            "value": "0"
+                                        }
+                                    ],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"page\": \"<integer>\",\n  \"limit\": \"<integer>\",\n  \"results\": [\n    \"\",\n    \"\"\n  ],\n  \"has_next\": \"<boolean>\"\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        },
+                        {
+                            "id": "904e996e-5cc3-44e5-b0de-af12c51607c4",
+                            "name": "Validation Error",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "v1",
+                                        "opportunities",
+                                        "search"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "Free-text title search",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "keywords",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "NAICS code, e.g. 336411",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "naics",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "p=Presolicitation, o=Solicitation, k=Combined Synopsis, r=Sources Sought, s=Special Notice",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "notice_type",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "e.g. SBA, 8A, WOSB, SDVOSBC",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "set_aside",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "How many days of postings to search",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "days_back",
+                                            "value": "30"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "limit",
+                                            "value": "25"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "offset",
+                                            "value": "0"
+                                        }
+                                    ],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-api-key",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "disabled": false,
+                                        "description": {
+                                            "content": "",
+                                            "type": "text/plain"
+                                        },
+                                        "key": "x-rapidapi-proxy-secret",
+                                        "value": "<string>"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\",\n      \"input\": \"\",\n      \"ctx\": {}\n    }\n  ]\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Meta",
+            "description": "",
+            "item": [
+                {
+                    "id": "24bb1b2f-648f-4d39-b716-b6ce72bd08b7",
+                    "name": "Liveness probe (no auth)",
+                    "request": {
+                        "name": "Liveness probe (no auth)",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                "health"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "717351f0-eb59-4a28-a791-23e5e19aa609",
+                            "name": "Successful Response",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "health"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"key_0\": 9264\n}",
+                            "cookie": [],
+                            "_postman_previewlanguage": "json"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        }
+    ],
+    "event": [],
+    "auth": {
+        "type": "apikey",
+        "apikey": [
+            { "key": "key", "value": "X-API-Key", "type": "string" },
+            { "key": "value", "value": "{{apiKey}}", "type": "string" },
+            { "key": "in", "value": "header", "type": "string" }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://contract-intel-api-gln8.onrender.com"
+        },
+        {
+            "key": "apiKey",
+            "value": "YOUR_API_KEY"
+        }
+    ],
+    "info": {
+        "_postman_id": "88a0d7e0-65a2-464e-9fbe-86014c49d31a",
+        "name": "Federal Contract Intelligence API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": {
+            "content": "\nSearch **$700B+/year** of US federal contract activity through one clean JSON API.\n\n| Capability | Endpoint |\n|---|---|\n| Contract award search | `POST /v1/awards/search` |\n| Full award detail | `GET /v1/awards/{internal_id}` |\n| Live solicitations | `GET /v1/opportunities/search` |\n| Spending analytics | `POST /v1/analytics/spending` |\n| **Recompete Radar** — contracts expiring soon | `POST /v1/recompetes/search` |\n\n**Get started:** set the `apiKey` collection variable (grab a free key — 50 req/mo — by subscribing to the Free tier on RapidAPI: search \"Federal Contract Intelligence\"). Auth is preconfigured at the collection level as an `X-API-Key` header.\n\nAll underlying data is official public-domain US government data (USAspending.gov, SAM.gov). Independent service — not affiliated with the US government.\n\n\nContact Support:\n Name: NexMath\n Email: karan@nexmath.com",
+            "type": "text/plain"
+        }
+    }
+}

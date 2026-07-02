@@ -61,17 +61,64 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AwardSearchRequest"
+              },
+              "example": {
+                "keywords": [
+                  "cybersecurity"
+                ],
+                "naics_codes": [
+                  "336413"
+                ],
+                "agency": "Department of Defense",
+                "start_date": "2018-01-01",
+                "sort": "Award Amount",
+                "order": "desc",
+                "limit": 25,
+                "page": 1
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Paged list of matching prime contract awards, largest first.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Paged"
+                },
+                "example": {
+                  "page": 1,
+                  "limit": 2,
+                  "has_next": true,
+                  "results": [
+                    {
+                      "award_id": "FA862118F6251",
+                      "internal_id": "CONT_AWD_FA862118F6251_9700_FA862115D6276_9700",
+                      "recipient_name": "LOCKHEED MARTIN CORPORATION",
+                      "description": "IGF::OT::IGF  AFSOC ACTS AWARD OF CONTRACT FOR CLS, ENGINEERING, INSTRUCTION, CYBERSECURITY, DMO",
+                      "amount": 632998084.56,
+                      "start_date": "2018-02-08",
+                      "end_date": "2027-01-31",
+                      "awarding_agency": "Department of Defense",
+                      "awarding_sub_agency": "Department of the Air Force",
+                      "naics": "336413",
+                      "psc": "J069"
+                    },
+                    {
+                      "award_id": "HQ085722F8003",
+                      "internal_id": "CONT_AWD_HQ085722F8003_9700_HQ079617D0001_9700",
+                      "recipient_name": "AMENTUM TECHNOLOGY, INC.",
+                      "description": "DELIVER INFORMATION MANAGEMENT AND IT SERVICES TO MDA FOR UNCLASSIFIED AND CLASSIFIED NETWORKS. PERFORM BREAK-FIX, MAINTENANCE AND CYBERSECURITY OF CIO MANAGED NETWORKS WITHIN MDA.",
+                      "amount": 524055138.18,
+                      "start_date": "2022-09-05",
+                      "end_date": "2025-09-01",
+                      "awarding_agency": "Department of Defense",
+                      "awarding_sub_agency": "Missile Defense Agency",
+                      "naics": "541712",
+                      "psc": "AC23"
+                    }
+                  ]
                 }
               }
             }
@@ -104,8 +151,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Internal Id"
-            }
+              "title": "Internal Id",
+              "example": "CONT_AWD_FA862118F6251_9700_FA862115D6276_9700"
+            },
+            "example": "CONT_AWD_FA862118F6251_9700_FA862115D6276_9700"
           },
           {
             "name": "x-api-key",
@@ -142,13 +191,71 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Full USAspending award record, including obligation totals, period of performance, recipient, place of performance, and NAICS/PSC hierarchies.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Award Detail V1 Awards  Internal Id  Get"
+                },
+                "example": {
+                  "id": 298556830,
+                  "generated_unique_award_id": "CONT_AWD_FA862118F6251_9700_FA862115D6276_9700",
+                  "piid": "FA862118F6251",
+                  "category": "contract",
+                  "type": "C",
+                  "type_description": "DELIVERY ORDER",
+                  "description": "IGF::OT::IGF  AFSOC ACTS AWARD OF CONTRACT FOR CLS, ENGINEERING, INSTRUCTION, CYBERSECURITY, DMO",
+                  "total_obligation": 632998084.56,
+                  "base_and_all_options": 720979922.69,
+                  "subaward_count": 477,
+                  "date_signed": "2018-02-08",
+                  "period_of_performance": {
+                    "start_date": "2018-02-08",
+                    "end_date": "2027-01-31",
+                    "last_modified_date": "2026-03-20",
+                    "potential_end_date": "2027-01-31 00:00:00"
+                  },
+                  "awarding_agency": {
+                    "toptier_name": "Department of Defense",
+                    "subtier_name": "Department of the Air Force"
+                  },
+                  "recipient": {
+                    "recipient_name": "LOCKHEED MARTIN CORPORATION",
+                    "recipient_uei": "KDT2YLB34NT6",
+                    "business_categories": [
+                      "Category Business",
+                      "Not Designated a Small Business",
+                      "U.S.-Owned Business"
+                    ]
+                  },
+                  "place_of_performance": {
+                    "city_name": "ORLANDO",
+                    "state_code": "FL",
+                    "country_name": "UNITED STATES",
+                    "zip5": "32825"
+                  },
+                  "naics_hierarchy": {
+                    "toptier_code": {
+                      "code": "33",
+                      "description": "Manufacturing"
+                    },
+                    "midtier_code": {
+                      "code": "3364",
+                      "description": "Aerospace Product and Parts Manufacturing"
+                    },
+                    "base_code": {
+                      "code": "336413",
+                      "description": "Other Aircraft Parts and Auxiliary Equipment Manufacturing"
+                    }
+                  },
+                  "psc_hierarchy": {
+                    "base_code": {
+                      "code": "J069",
+                      "description": "MAINT/REPAIR/REBUILD OF EQUIPMENT- TRAINING AIDS AND DEVICES"
+                    }
+                  }
                 }
               }
             }
@@ -172,6 +279,7 @@
           "Recompete Radar"
         ],
         "summary": "Find contracts expiring soon (likely recompetes)",
+        "description": "The flagship endpoint. Finds prime contracts whose period of performance ends inside your window (1-36 months out) -- predictable upcoming re-competitions. Each result adds `months_until_expiry` and a `recompete_score` (0-100) that ranks bigger, sooner-expiring contracts first, so the best BD targets surface at the top.",
         "operationId": "search_recompetes_v1_recompetes_search_post",
         "parameters": [
           {
@@ -213,17 +321,62 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RecompeteRequest"
+              },
+              "example": {
+                "months_ahead": 12,
+                "naics_codes": [
+                  "541512"
+                ],
+                "min_amount": 10000000,
+                "limit": 50
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Contracts expiring inside your window, ranked by recompete_score (highest first).",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Paged"
+                },
+                "example": {
+                  "page": 1,
+                  "limit": 2,
+                  "has_next": false,
+                  "results": [
+                    {
+                      "award_id": "36C10B18N0003",
+                      "internal_id": "CONT_AWD_36C10B18N0003_3600_36C10B18D5000_3600",
+                      "recipient_name": "ORACLE HEALTH GOVERNMENT SERVICES, INC.",
+                      "description": "IGF::OT::IGF TASK ORDER 36C10B18N0003 UNDER IDIQ CONTRACT 36C10B18D5000 FOR OPERATIONAL MANAGEMENT SERVICES, TO INCLUDE HOSTING, FOR THE EHRM APPLICATIONS.",
+                      "amount": 1496628663.21,
+                      "start_date": "2018-05-17",
+                      "end_date": "2027-05-16",
+                      "awarding_agency": "Department of Veterans Affairs",
+                      "awarding_sub_agency": "Department of Veterans Affairs",
+                      "naics": "541512",
+                      "psc": "D318",
+                      "months_until_expiry": 10.4,
+                      "recompete_score": 65.3
+                    },
+                    {
+                      "award_id": "47QFRA24F0005",
+                      "internal_id": "CONT_AWD_47QFRA24F0005_4732_47QTCK18D0009_4732",
+                      "recipient_name": "CACI, INC. - FEDERAL",
+                      "description": "CDM DEFEND GROUP A  BRIDGE TASK ORDER",
+                      "amount": 790570278.9,
+                      "start_date": "2024-05-01",
+                      "end_date": "2027-04-30",
+                      "awarding_agency": "General Services Administration",
+                      "awarding_sub_agency": "Federal Acquisition Service",
+                      "naics": "541512",
+                      "psc": "DA01",
+                      "months_until_expiry": 9.9,
+                      "recompete_score": 60.3
+                    }
+                  ]
                 }
               }
             }
@@ -289,17 +442,56 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SpendingBreakdownRequest"
+              },
+              "example": {
+                "dimension": "recipient",
+                "keywords": [
+                  "cybersecurity"
+                ],
+                "fiscal_year": 2024,
+                "limit": 25
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Total obligated spending grouped by the requested dimension, largest first.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Paged"
+                },
+                "example": {
+                  "page": 1,
+                  "limit": 3,
+                  "has_next": true,
+                  "results": [
+                    {
+                      "amount": 190921267.91,
+                      "recipient_id": "64d116c0-8e36-0200-3878-827560dca24a-C",
+                      "name": "AMENTUM TECHNOLOGY, INC.",
+                      "code": "079864678",
+                      "uei": "DTRJLHVLK8F4",
+                      "total_outlays": null
+                    },
+                    {
+                      "amount": 103440269.76,
+                      "recipient_id": "ffca72e5-fba2-798a-6969-2a6c45e9f985-C",
+                      "name": "BOOZ ALLEN HAMILTON INC",
+                      "code": "006928857",
+                      "uei": "JCBMLGPE6Z71",
+                      "total_outlays": null
+                    },
+                    {
+                      "amount": 81943657.12,
+                      "recipient_id": "455555be-773d-eab1-1e6b-7b94400b757e-C",
+                      "name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.",
+                      "code": "067641597",
+                      "uei": "SMNWM6HN79X5",
+                      "total_outlays": null
+                    }
+                  ]
                 }
               }
             }
@@ -323,6 +515,7 @@
           "Opportunities"
         ],
         "summary": "Search live solicitations",
+        "description": "Search open federal solicitations sourced from SAM.gov. Filter by keyword, NAICS, notice type, set-aside, and how many days back to look. Every result links to the official SAM.gov notice via `ui_link`.",
         "operationId": "search_opportunities_v1_opportunities_search_get",
         "parameters": [
           {
@@ -339,9 +532,11 @@
                 }
               ],
               "description": "Free-text title search",
-              "title": "Keywords"
+              "title": "Keywords",
+              "example": "cyber"
             },
-            "description": "Free-text title search"
+            "description": "Free-text title search",
+            "example": "cyber"
           },
           {
             "name": "naics",
@@ -469,11 +664,42 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Open solicitations matching your filters, newest postings first.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Paged"
+                },
+                "example": {
+                  "page": 1,
+                  "limit": 2,
+                  "has_next": true,
+                  "results": [
+                    {
+                      "notice_id": "6af0a36b46ea4b328302f6cd1eeae71f",
+                      "title": "PBXP 222050 - B403 CYBER REPAIR",
+                      "solicitation_number": "W50S8R26RA005",
+                      "agency": "DEPT OF DEFENSE.DEPT OF THE ARMY.NATIONAL GUARD BUREAU.JFHQ USPFO OH",
+                      "notice_type": "Solicitation",
+                      "posted_date": "2026-07-02",
+                      "response_deadline": "2026-07-09T13:00:00-04:00",
+                      "naics_code": "236220",
+                      "set_aside": "No Set aside used",
+                      "ui_link": "https://sam.gov/workspace/contract/opp/6af0a36b46ea4b328302f6cd1eeae71f/view"
+                    },
+                    {
+                      "notice_id": "df06ade07d8e4cd9a1c13c590af9177a",
+                      "title": "FA9453-21-S-0001-Call016 - Space Strategic Technology Institute (SSTI)",
+                      "solicitation_number": "SSTI5_Call016",
+                      "agency": "DEPT OF DEFENSE.DEPT OF THE AIR FORCE.AIR FORCE RESEARCH LABORATORY.FA9453  AFRL RVK",
+                      "notice_type": "Solicitation",
+                      "posted_date": "2026-07-01",
+                      "response_deadline": "2026-08-13T11:00:00-06:00",
+                      "naics_code": "541715",
+                      "set_aside": null,
+                      "ui_link": "https://sam.gov/workspace/contract/opp/df06ade07d8e4cd9a1c13c590af9177a/view"
+                    }
+                  ]
                 }
               }
             }
@@ -663,7 +889,21 @@
           }
         },
         "type": "object",
-        "title": "AwardSearchRequest"
+        "title": "AwardSearchRequest",
+        "example": {
+          "keywords": [
+            "cybersecurity"
+          ],
+          "naics_codes": [
+            "336413"
+          ],
+          "agency": "Department of Defense",
+          "start_date": "2018-01-01",
+          "sort": "Award Amount",
+          "order": "desc",
+          "limit": 25,
+          "page": 1
+        }
       },
       "HTTPValidationError": {
         "properties": {
@@ -799,7 +1039,15 @@
         },
         "type": "object",
         "title": "RecompeteRequest",
-        "description": "Find contracts whose period of performance ends inside a window --\ni.e. predictable upcoming re-competitions."
+        "description": "Find contracts whose period of performance ends inside a window --\ni.e. predictable upcoming re-competitions.",
+        "example": {
+          "months_ahead": 12,
+          "naics_codes": [
+            "541512"
+          ],
+          "min_amount": 10000000,
+          "limit": 50
+        }
       },
       "SpendingBreakdownRequest": {
         "properties": {
@@ -878,7 +1126,15 @@
         "required": [
           "dimension"
         ],
-        "title": "SpendingBreakdownRequest"
+        "title": "SpendingBreakdownRequest",
+        "example": {
+          "dimension": "recipient",
+          "keywords": [
+            "cybersecurity"
+          ],
+          "fiscal_year": 2024,
+          "limit": 25
+        }
       },
       "ValidationError": {
         "properties": {
@@ -921,5 +1177,11 @@
         "title": "ValidationError"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://contract-intel-api-gln8.onrender.com",
+      "description": "Production"
+    }
+  ]
 }

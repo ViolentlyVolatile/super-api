@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d2137"/>
+      <stop offset="1" stop-color="#071527"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5b942" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#f5b942" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5b942" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#f5b942" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="500" height="500" rx="90" fill="url(#bg)"/>
+  <rect x="6" y="6" width="488" height="488" rx="84" fill="none" stroke="#1e3a55" stroke-width="2"/>
+
+  <!-- radar rings, centered slightly high to leave room for wordmark -->
+  <g transform="translate(250,222)">
+    <circle r="150" fill="none" stroke="#2c4a68" stroke-width="2.5"/>
+    <circle r="108" fill="none" stroke="#274361" stroke-width="2"/>
+    <circle r="66" fill="none" stroke="#223c58" stroke-width="2"/>
+    <!-- crosshair -->
+    <line x1="-150" y1="0" x2="150" y2="0" stroke="#223c58" stroke-width="2"/>
+    <line x1="0" y1="-150" x2="0" y2="150" stroke="#223c58" stroke-width="2"/>
+
+    <!-- sweep wedge: from 300° to 360° -->
+    <path d="M0,0 L75,-129.9 A150,150 0 0 1 150,0 Z" fill="url(#sweep)"/>
+    <line x1="0" y1="0" x2="75" y2="-129.9" stroke="#f5b942" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- faint blips -->
+    <circle cx="-88" cy="-52" r="7" fill="#4f7ba6"/>
+    <circle cx="-46" cy="78" r="7" fill="#4f7ba6"/>
+    <circle cx="58" cy="96" r="7" fill="#3d648c"/>
+
+    <!-- hot blip: the expiring contract -->
+    <circle cx="96" cy="-56" r="46" fill="url(#glow)"/>
+    <circle cx="96" cy="-56" r="17" fill="#f5b942"/>
+    <text x="96" y="-49.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="bold" fill="#0d2137">$</text>
+
+    <!-- center dot -->
+    <circle r="6.5" fill="#e8eef5"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="250" y="435" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="bold" fill="#e8eef5" letter-spacing="14">FCI</text>
+</svg>

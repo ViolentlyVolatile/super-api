@@ -24,6 +24,42 @@ curl -s -X POST "$BASE/v1/awards/search" \
   }'
 ```
 
+Example response (real data, trimmed to two rows):
+
+```json
+{
+  "page": 1,
+  "limit": 2,
+  "has_next": true,
+  "results": [
+    {
+      "award_id": "FA862118F6251",
+      "internal_id": "CONT_AWD_FA862118F6251_9700_FA862115D6276_9700",
+      "recipient_name": "LOCKHEED MARTIN CORPORATION",
+      "description": "AFSOC ACTS AWARD OF CONTRACT FOR CLS, ENGINEERING, INSTRUCTION, CYBERSECURITY, DMO",
+      "amount": 632998084.56,
+      "start_date": "2018-02-08",
+      "end_date": "2027-01-31",
+      "awarding_agency": "Department of Defense",
+      "awarding_sub_agency": "Department of the Air Force",
+      "naics": "336413",
+      "psc": "J069"
+    },
+    {
+      "award_id": "HQ085722F8003",
+      "internal_id": "CONT_AWD_HQ085722F8003_9700_HQ079617D0001_9700",
+      "recipient_name": "AMENTUM TECHNOLOGY, INC.",
+      "amount": 524055138.18,
+      "end_date": "2025-09-01",
+      "awarding_agency": "Department of Defense",
+      "awarding_sub_agency": "Missile Defense Agency",
+      "naics": "541712",
+      "psc": "AC23"
+    }
+  ]
+}
+```
+
 Response rows include `internal_id` — pass it to `GET /v1/awards/{internal_id}` for the complete federal record (officers, place of performance, executive compensation, transaction history).
 
 Python:
@@ -56,6 +92,43 @@ curl -s -X POST "$BASE/v1/recompetes/search" \
   }'
 ```
 
+Example response (real data):
+
+```json
+{
+  "page": 1,
+  "limit": 2,
+  "has_next": false,
+  "results": [
+    {
+      "award_id": "36C10B18N0003",
+      "internal_id": "CONT_AWD_36C10B18N0003_3600_36C10B18D5000_3600",
+      "recipient_name": "ORACLE HEALTH GOVERNMENT SERVICES, INC.",
+      "amount": 1496628663.21,
+      "start_date": "2018-05-17",
+      "end_date": "2027-05-16",
+      "awarding_agency": "Department of Veterans Affairs",
+      "naics": "541512",
+      "psc": "D318",
+      "months_until_expiry": 10.4,
+      "recompete_score": 65.3
+    },
+    {
+      "award_id": "47QFRA24F0005",
+      "internal_id": "CONT_AWD_47QFRA24F0005_4732_47QTCK18D0009_4732",
+      "recipient_name": "CACI, INC. - FEDERAL",
+      "amount": 790570278.9,
+      "end_date": "2027-04-30",
+      "awarding_agency": "General Services Administration",
+      "naics": "541512",
+      "psc": "DA01",
+      "months_until_expiry": 9.9,
+      "recompete_score": 60.3
+    }
+  ]
+}
+```
+
 Each result adds `months_until_expiry` and `recompete_score` (0–100; larger contracts expiring sooner rank higher). Results are sorted by score. Responses are cached ~6 h — expiry windows don't move fast.
 
 JavaScript:
@@ -84,6 +157,21 @@ curl -s -X POST "$BASE/v1/analytics/spending" \
   -d '{"dimension": "recipient", "naics_codes": ["336411"], "agency": "Department of Defense", "fiscal_year": 2025}'
 ```
 
+Example response (real data — top cybersecurity recipients, FY2024):
+
+```json
+{
+  "page": 1,
+  "limit": 3,
+  "has_next": true,
+  "results": [
+    { "name": "AMENTUM TECHNOLOGY, INC.", "amount": 190921267.91, "uei": "DTRJLHVLK8F4" },
+    { "name": "BOOZ ALLEN HAMILTON INC", "amount": 103440269.76, "uei": "JCBMLGPE6Z71" },
+    { "name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.", "amount": 81943657.12, "uei": "SMNWM6HN79X5" }
+  ]
+}
+```
+
 ## 4. Live opportunities — `GET /v1/opportunities/search`
 
 Open solicitations straight from SAM.gov, normalized.
@@ -91,6 +179,29 @@ Open solicitations straight from SAM.gov, normalized.
 ```bash
 curl -s "$BASE/v1/opportunities/search?naics=336411&notice_type=o&days_back=30&limit=25" \
   -H "X-API-Key: $KEY"
+```
+
+Example response (real data):
+
+```json
+{
+  "page": 1,
+  "limit": 2,
+  "has_next": true,
+  "results": [
+    {
+      "notice_id": "6af0a36b46ea4b328302f6cd1eeae71f",
+      "title": "PBXP 222050 - B403 CYBER REPAIR",
+      "solicitation_number": "W50S8R26RA005",
+      "notice_type": "Solicitation",
+      "posted_date": "2026-07-02",
+      "response_deadline": "2026-07-09T13:00:00-04:00",
+      "naics_code": "236220",
+      "set_aside": "No Set aside used",
+      "ui_link": "https://sam.gov/workspace/contract/opp/6af0a36b46ea4b328302f6cd1eeae71f/view"
+    }
+  ]
+}
 ```
 
 Query params: `keywords`, `naics`, `notice_type` (`p` presolicitation, `o` solicitation, `k` combined synopsis, `r` sources sought, `s` special notice), `set_aside` (`SBA`, `8A`, `WOSB`, `SDVOSBC`…), `days_back`, `limit`, `offset`. Each row carries `ui_link` to the notice on sam.gov.
