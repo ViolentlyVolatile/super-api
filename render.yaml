@@ -6,7 +6,9 @@ services:
     name: contract-intel-api
     runtime: docker
     rootDir: contract-intel-api
-    plan: starter          # $7/mo; free plan sleeps and is bad for a paid API
+    plan: free             # $0: sleeps after 15 min idle -- keep warm with a free
+                           # uptime pinger on /health. Upgrade to starter ($7/mo)
+                           # as soon as you have paying subscribers.
     healthCheckPath: /health
     envVars:
       - key: FCI_API_KEYS
