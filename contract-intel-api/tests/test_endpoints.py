@@ -119,6 +119,39 @@ def test_recompete_window_filtering_and_scoring(client):
 
 
 @respx.mock
+def test_recompete_jumps_past_far_future_junk(client):
+    """Live USAspending has typo end dates (year 8201+); the scan must jump
+    over those pages via binary search instead of crawling from page 1."""
+    import json as _json
+
+    today = date.today()
+    junk = [_award_row(**{"Award ID": f"JUNK-{i}", "End Date": "8201-01-01"}) for i in range(3)]
+    window_page = [
+        _award_row(**{"Award ID": "FAR", "End Date": str(today + timedelta(days=4000))}),
+        _award_row(**{"Award ID": "HIT", "End Date": str(today + timedelta(days=120)), "Award Amount": 9e6}),
+        _award_row(**{"Award ID": "PAST", "End Date": str(today - timedelta(days=5))}),
+    ]
+
+    def responder(request):
+        page = _json.loads(request.content)["page"]
+        if page < 7:
+            body = {"results": junk, "page_metadata": {"hasNext": True}}
+        elif page == 7:
+            body = {"results": window_page, "page_metadata": {"hasNext": True}}
+        else:
+            body = {"results": [], "page_metadata": {"hasNext": False}}
+        return Response(200, json=body)
+
+    route = respx.post(f"{USA}/search/spending_by_award/").mock(side_effect=responder)
+    r = client.post("/v1/recompetes/search", json={"months_ahead": 12}, headers=AUTH)
+    assert r.status_code == 200
+    ids = [x["award_id"] for x in r.json()["results"]]
+    assert ids == ["HIT"]
+    # binary search must be cheap: far fewer calls than a linear crawl to page 7+
+    assert route.call_count <= 10
+
+
+@respx.mock
 def test_analytics_breakdown(client):
     respx.post(f"{USA}/search/spending_by_category/naics/").mock(
         return_value=Response(

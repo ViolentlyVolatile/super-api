@@ -25,6 +25,33 @@ def _score(amount: float | None, months_left: float, horizon: int) -> float:
     return round(100 * (0.6 * size + 0.4 * urgency), 1)
 
 
+def _last_end_date(rows: list[dict]) -> date | None:
+    """Last parseable End Date in a page (rows are sorted by End Date desc)."""
+    for row in reversed(rows):
+        raw = row.get("End Date")
+        if not raw:
+            continue
+        try:
+            return date.fromisoformat(raw)
+        except ValueError:
+            continue
+    return None
+
+
+async def _fetch_page(filters: dict, page: int) -> dict:
+    return await upstream.usaspending_post(
+        "/search/spending_by_award/",
+        {
+            "filters": filters,
+            "fields": FIELDS,
+            "sort": "End Date",
+            "order": "desc",
+            "limit": 100,
+            "page": page,
+        },
+    )
+
+
 @router.post("/search", response_model=Paged, summary="Find contracts expiring soon (likely recompetes)")
 async def search_recompetes(req: RecompeteRequest) -> Paged:
     s = get_settings()
@@ -43,19 +70,49 @@ async def search_recompetes(req: RecompeteRequest) -> Paged:
         min_amount=req.min_amount,
     )
 
-    # USAspending cannot bound "End Date" server-side, so we sort by End Date
-    # descending (far future first) and scan pages until rows drop below today.
+    # USAspending cannot bound "End Date" server-side. Sorting desc puts the
+    # far future first -- including data-entry typos (end dates in year 8201!)
+    # -- so a linear scan from page 1 never reaches the real window. Instead we
+    # locate the first page whose rows have descended into the window
+    # (exponential probe + binary search on the page number), then collect.
+    async def window_reached(page: int) -> tuple[bool, dict]:
+        """True once this page's rows have descended to/past window_end."""
+        data = await _fetch_page(filters, page)
+        rows = data.get("results", [])
+        if not rows:
+            return True, data  # ran out of data: window is at/behind this page
+        last = _last_end_date(rows)
+        return (last is None or last <= window_end), data
+
+    reached, first_data = await window_reached(1)
+    start_page = 1
+    if not reached and first_data.get("page_metadata", {}).get("hasNext"):
+        # Exponential probe: find some page where the window is reached.
+        lo, hi = 1, None
+        p = 2
+        for _ in range(20):  # up to page ~1M
+            reached, _data = await window_reached(p)
+            if reached:
+                hi = p
+                break
+            lo = p
+            p *= 2
+        # Binary search: smallest page where the window is reached.
+        if hi is not None:
+            while hi - lo > 1:
+                mid = (lo + hi) // 2
+                reached, _data = await window_reached(mid)
+                if reached:
+                    hi = mid
+                else:
+                    lo = mid
+            start_page = hi
+        else:
+            start_page = p  # window deeper than probe budget; collect best-effort
+
     candidates: list[RecompeteCandidate] = []
-    for page in range(1, s.recompete_scan_pages + 1):
-        body = {
-            "filters": filters,
-            "fields": FIELDS,
-            "sort": "End Date",
-            "order": "desc",
-            "limit": 100,
-            "page": page,
-        }
-        data = await upstream.usaspending_post("/search/spending_by_award/", body)
+    for page in range(start_page, start_page + s.recompete_scan_pages):
+        data = first_data if page == 1 else await _fetch_page(filters, page)
         rows = data.get("results", [])
         if not rows:
             break
