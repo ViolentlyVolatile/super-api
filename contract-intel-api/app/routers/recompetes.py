@@ -6,7 +6,7 @@ $300-1,000/seat/month; here it is a single API call.
 """
 import asyncio
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends
 
@@ -27,31 +27,19 @@ def _score(amount: float | None, months_left: float, horizon: int) -> float:
     return round(100 * (0.6 * size + 0.4 * urgency), 1)
 
 
-def _last_end_date(rows: list[dict]) -> date | None:
-    """Last parseable End Date in a page (rows are sorted by End Date desc)."""
-    for row in reversed(rows):
-        raw = row.get("End Date")
-        if not raw:
-            continue
-        try:
-            return date.fromisoformat(raw)
-        except ValueError:
-            continue
-    return None
+# Sentinel for the forged search_after cursor: larger than any real record id,
+# so rows whose End Date equals the boundary date are included, not skipped.
+_CURSOR_MAX_ID = 2**62
 
 
-async def _fetch_page(filters: dict, page: int) -> dict:
-    return await upstream.usaspending_post(
-        "/search/spending_by_award/",
-        {
-            "filters": filters,
-            "fields": FIELDS,
-            "sort": "End Date",
-            "order": "desc",
-            "limit": 100,
-            "page": page,
-        },
-    )
+def _cursor_date(value: str | int) -> str:
+    """USAspending echoes the End Date sort value as epoch milliseconds
+    ("1813968000000") in page_metadata, but rejects that exact value when sent
+    back (503/422) -- it only accepts date strings. Convert before reuse."""
+    s = str(value)
+    if s.isdigit():
+        return datetime.fromtimestamp(int(s) / 1000, tz=timezone.utc).date().isoformat()
+    return s
 
 
 @router.post("/search", response_model=Paged, summary="Find contracts expiring soon (likely recompetes)")
@@ -72,49 +60,30 @@ async def search_recompetes(req: RecompeteRequest) -> Paged:
         min_amount=req.min_amount,
     )
 
-    # USAspending cannot bound "End Date" server-side. Sorting desc puts the
-    # far future first -- including data-entry typos (end dates in year 8201!)
-    # -- so a linear scan from page 1 never reaches the real window. Instead we
-    # locate the first page whose rows have descended into the window
-    # (exponential probe + binary search on the page number), then collect.
-    async def window_reached(page: int) -> tuple[bool, dict]:
-        """True once this page's rows have descended to/past window_end."""
-        data = await _fetch_page(filters, page)
-        rows = data.get("results", [])
-        if not rows:
-            return True, data  # ran out of data: window is at/behind this page
-        last = _last_end_date(rows)
-        return (last is None or last <= window_end), data
-
-    reached, first_data = await window_reached(1)
-    start_page = 1
-    if not reached and first_data.get("page_metadata", {}).get("hasNext"):
-        # Exponential probe: find some page where the window is reached.
-        lo, hi = 1, None
-        p = 2
-        for _ in range(20):  # up to page ~1M
-            reached, _data = await window_reached(p)
-            if reached:
-                hi = p
-                break
-            lo = p
-            p *= 2
-        # Binary search: smallest page where the window is reached.
-        if hi is not None:
-            while hi - lo > 1:
-                mid = (lo + hi) // 2
-                reached, _data = await window_reached(mid)
-                if reached:
-                    hi = mid
-                else:
-                    lo = mid
-            start_page = hi
-        else:
-            start_page = p  # window deeper than probe budget; collect best-effort
-
+    # USAspending cannot bound "End Date" server-side, and sorting desc puts
+    # data-entry typos (end dates in year 8201!) first -- often more than the
+    # 50,000-row random-access pagination cap, making the window unreachable
+    # by page number alone. Instead we forge an Elasticsearch search_after
+    # cursor at the window boundary: pass window_end as last_record_sort_value
+    # and jump directly to the first row with End Date <= window_end, then
+    # paginate sequentially until rows drop below today.
     candidates: list[RecompeteCandidate] = []
-    for page in range(start_page, start_page + s.recompete_scan_pages):
-        data = first_data if page == 1 else await _fetch_page(filters, page)
+    cursor_value: str | int = str(window_end)
+    cursor_id: int = _CURSOR_MAX_ID
+    for page in range(1, s.recompete_scan_pages + 1):
+        data = await upstream.usaspending_post(
+            "/search/spending_by_award/",
+            {
+                "filters": filters,
+                "fields": FIELDS,
+                "sort": "End Date",
+                "order": "desc",
+                "limit": 100,
+                "page": page,
+                "last_record_sort_value": cursor_value,
+                "last_record_unique_id": cursor_id,
+            },
+        )
         rows = data.get("results", [])
         if not rows:
             break
@@ -140,8 +109,14 @@ async def search_recompetes(req: RecompeteRequest) -> Paged:
                     recompete_score=_score(a.amount, months_left, req.months_ahead),
                 )
             )
-        if past_window or not data.get("page_metadata", {}).get("hasNext"):
+        meta = data.get("page_metadata", {})
+        if past_window or not meta.get("hasNext"):
             break
+        # advance the search_after cursor to the last row of this page
+        next_value, next_id = meta.get("last_record_sort_value"), meta.get("last_record_unique_id")
+        if next_value is None or next_id is None:
+            break
+        cursor_value, cursor_id = _cursor_date(next_value), next_id
 
     candidates.sort(key=lambda c: c.recompete_score or 0, reverse=True)
     out = Paged(page=1, limit=req.limit, has_next=False, results=candidates[: req.limit])
@@ -150,9 +125,9 @@ async def search_recompetes(req: RecompeteRequest) -> Paged:
 
 
 # --- Cache pre-warming -------------------------------------------------------
-# The first uncached scan costs ~15-20 upstream calls (30-60s). Warm the most
-# common queries on startup and re-warm before the cache TTL expires, so the
-# marketplace first-call experience is fast.
+# Scans are only a few upstream calls now, but warming the most common queries
+# at startup (and before the cache TTL expires) keeps the marketplace
+# first-call experience instant.
 
 log = logging.getLogger("fci.prewarm")
 

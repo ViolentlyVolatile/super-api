@@ -119,36 +119,48 @@ def test_recompete_window_filtering_and_scoring(client):
 
 
 @respx.mock
-def test_recompete_jumps_past_far_future_junk(client):
-    """Live USAspending has typo end dates (year 8201+); the scan must jump
-    over those pages via binary search instead of crawling from page 1."""
+def test_recompete_forged_cursor_skips_far_future_junk(client):
+    """Live USAspending has 50k+ rows of far-future end dates (typos in year
+    8201+), beyond the 50,000-row pagination cap. The scan must jump directly
+    to the expiry window by forging a search_after cursor (last_record_sort_value
+    = window boundary date), never crawling the junk region."""
     import json as _json
 
     today = date.today()
-    junk = [_award_row(**{"Award ID": f"JUNK-{i}", "End Date": "8201-01-01"}) for i in range(3)]
+    window_end = today + timedelta(days=12 * 30)
     window_page = [
-        _award_row(**{"Award ID": "FAR", "End Date": str(today + timedelta(days=4000))}),
-        _award_row(**{"Award ID": "HIT", "End Date": str(today + timedelta(days=120)), "Award Amount": 9e6}),
+        _award_row(**{"Award ID": "HIT", "End Date": str(today + timedelta(days=120)), "Award Amount": 9e8}),
+    ]
+
+    page2 = [
+        _award_row(**{"Award ID": "HIT2", "End Date": str(today + timedelta(days=60)), "Award Amount": 2e6}),
         _award_row(**{"Award ID": "PAST", "End Date": str(today - timedelta(days=5))}),
     ]
 
     def responder(request):
-        page = _json.loads(request.content)["page"]
-        if page < 7:
-            body = {"results": junk, "page_metadata": {"hasNext": True}}
-        elif page == 7:
-            body = {"results": window_page, "page_metadata": {"hasNext": True}}
-        else:
-            body = {"results": [], "page_metadata": {"hasNext": False}}
-        return Response(200, json=body)
+        body = _json.loads(request.content)
+        assert body["sort"] == "End Date" and body["order"] == "desc"
+        if body["page"] == 1:
+            # the very first upstream call must already carry the forged cursor
+            assert body["last_record_sort_value"] == str(window_end)
+            assert body["last_record_unique_id"] > 0
+            return Response(200, json={
+                "results": window_page,
+                # USAspending echoes the cursor as epoch-millis; sending that
+                # back verbatim 503s, so the client must convert it to a date
+                "page_metadata": {"hasNext": True, "last_record_sort_value": "1813968000000", "last_record_unique_id": 42},
+            })
+        assert body["last_record_sort_value"] == "2027-06-26"  # converted, not millis
+        assert body["last_record_unique_id"] == 42
+        return Response(200, json={"results": page2, "page_metadata": {"hasNext": False}})
 
     route = respx.post(f"{USA}/search/spending_by_award/").mock(side_effect=responder)
     r = client.post("/v1/recompetes/search", json={"months_ahead": 12}, headers=AUTH)
     assert r.status_code == 200
     ids = [x["award_id"] for x in r.json()["results"]]
-    assert ids == ["HIT"]
-    # binary search must be cheap: far fewer calls than a linear crawl to page 7+
-    assert route.call_count <= 10
+    assert ids == ["HIT", "HIT2"]
+    # direct jump plus one sequential page: no probing
+    assert route.call_count == 2
 
 
 @respx.mock
