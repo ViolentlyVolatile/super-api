@@ -1,0 +1,26 @@
+# Fly.io config — deploys straight from this folder, no GitHub needed:
+#   1. Install flyctl:  https://fly.io/docs/flyctl/install/
+#   2. fly launch --copy-config --no-deploy   (accept defaults)
+#   3. fly secrets set FCI_API_KEYS=<key> FCI_SAM_API_KEY=<key>
+#   4. fly deploy
+app = "contract-intel-api"
+primary_region = "iad"   # US East: closest to api.sam.gov / api.usaspending.gov
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false   # keep warm; a paid API must not cold-start
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  method = "GET"
+  path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

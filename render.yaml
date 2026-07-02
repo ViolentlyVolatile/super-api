@@ -1,0 +1,21 @@
+# Render Blueprint for the super-api monorepo.
+# In Render: New + -> Blueprint -> select the super-api repo -> Apply.
+# Then set the secret env vars in the service dashboard.
+services:
+  - type: web
+    name: contract-intel-api
+    runtime: docker
+    rootDir: contract-intel-api
+    plan: starter          # $7/mo; free plan sleeps and is bad for a paid API
+    healthCheckPath: /health
+    envVars:
+      - key: FCI_API_KEYS
+        sync: false        # set in dashboard (your direct-customer keys)
+      - key: FCI_RAPIDAPI_PROXY_SECRET
+        sync: false        # set after RapidAPI listing exists; blank = direct keys only
+      - key: FCI_SAM_API_KEY
+        sync: false        # optional; enables /v1/opportunities
+      - key: FCI_DEMO_MODE
+        value: "false"
+      - key: FCI_RATE_LIMIT_PER_MINUTE
+        value: "120"
