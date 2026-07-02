@@ -9,6 +9,7 @@ os.environ["FCI_RAPIDAPI_PROXY_SECRET"] = "rapid-secret"
 os.environ["FCI_SAM_API_KEY"] = "sam-test-key"
 os.environ["FCI_DEMO_MODE"] = "false"
 os.environ["FCI_RATE_LIMIT_PER_MINUTE"] = "1000"
+os.environ["FCI_RECOMPETE_PREWARM"] = "false"  # no real upstream calls from tests
 
 import pytest
 from fastapi.testclient import TestClient

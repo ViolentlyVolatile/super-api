@@ -36,6 +36,7 @@ class Settings(BaseSettings):
 
     # --- Recompete scan tuning ---
     recompete_scan_pages: int = 5   # upstream pages (100 rows each) scanned per query
+    recompete_prewarm: bool = True  # warm common recompete queries on startup + before TTL expiry
     upstream_timeout_seconds: float = 30.0
 
     model_config = {"env_prefix": "FCI_", "env_file": ".env", "extra": "ignore"}

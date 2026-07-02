@@ -4,6 +4,8 @@ Contracts whose period of performance ends within N months are highly likely
 to be re-solicited. Incumbent-facing platforms sell this signal for
 $300-1,000/seat/month; here it is a single API call.
 """
+import asyncio
+import logging
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends
@@ -145,3 +147,29 @@ async def search_recompetes(req: RecompeteRequest) -> Paged:
     out = Paged(page=1, limit=req.limit, has_next=False, results=candidates[: req.limit])
     cache.put("recompetes", cache_body, out, recompete=True)
     return out
+
+
+# --- Cache pre-warming -------------------------------------------------------
+# The first uncached scan costs ~15-20 upstream calls (30-60s). Warm the most
+# common queries on startup and re-warm before the cache TTL expires, so the
+# marketplace first-call experience is fast.
+
+log = logging.getLogger("fci.prewarm")
+
+PREWARM_QUERIES = [
+    RecompeteRequest(),                                     # default: 12 months
+    RecompeteRequest(months_ahead=6),
+    RecompeteRequest(months_ahead=12, min_amount=5_000_000),
+]
+
+
+async def prewarm_loop() -> None:
+    s = get_settings()
+    while True:
+        for req in PREWARM_QUERIES:
+            try:
+                await search_recompetes(req)
+            except Exception as exc:  # never let warming kill the app
+                log.warning("prewarm failed for %s: %s", req.model_dump(), exc)
+        # re-warm 30 min before expiry so users never hit a cold cache
+        await asyncio.sleep(max(s.recompete_cache_ttl_seconds - 1800, 600))

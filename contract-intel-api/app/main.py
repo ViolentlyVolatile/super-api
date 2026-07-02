@@ -4,6 +4,9 @@ Unified, developer-friendly access to US federal contracting data:
 awards, live opportunities, spending analytics, and recompete forecasting.
 Sources: USAspending.gov and SAM.gov (public domain US government data).
 """
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from .config import get_settings
@@ -25,6 +28,16 @@ All underlying data is public-domain US government data.
 """
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = None
+    if get_settings().recompete_prewarm:
+        task = asyncio.create_task(recompetes.prewarm_loop())
+    yield
+    if task:
+        task.cancel()
+
+
 def create_app() -> FastAPI:
     s = get_settings()
     app = FastAPI(
@@ -33,6 +46,7 @@ def create_app() -> FastAPI:
         description=DESCRIPTION,
         contact={"name": "NexMath", "email": "karan@nexmath.com"},
         license_info={"name": "Data: US public domain; Service: commercial"},
+        lifespan=lifespan,
     )
     app.include_router(awards.router)
     app.include_router(recompetes.router)
