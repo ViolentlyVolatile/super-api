@@ -112,7 +112,7 @@ const DEFAULT_APIS = [
     tests: [
       {name:"Health", method:"GET", path:"/health", expect:200, contains:'"status":"ok"', noAuth:true},
       {name:"Email — valid", method:"POST", path:"/email", body:{email:"karan@nexmath.com"}, expect:200, contains:'"valid":true'},
-      {name:"Email — typo detection", method:"POST", path:"/email", body:{email:"test@gmial.com"}, expect:200, contains:'possible_domain_typo'},
+      {name:"Email — typo detection", method:"POST", path:"/email", body:{email:"test@gmial.com"}, expect:200, contains:'"did_you_mean":"test@gmail.com"'},
       {name:"Email — disposable", method:"POST", path:"/email", body:{email:"a@mailinator.com"}, expect:200, contains:'"disposable":true'},
       {name:"Phone — valid US", method:"POST", path:"/phone", body:{phone:"+14155552671"}, expect:200, contains:'"valid":true'},
       {name:"Batch (email + phone)", method:"POST", path:"/batch", body:{emails:["a@mailinator.com"],phones:["+442071838750"]}, expect:200, contains:'"counts"'},
