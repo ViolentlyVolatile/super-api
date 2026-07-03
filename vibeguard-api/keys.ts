@@ -73,7 +73,10 @@ export async function handleKeys(
       })
       .select("id, created_at")
       .single();
-    if (error || !data) return json({ error: `Could not create key: ${error?.message}` }, 500);
+    if (error || !data) {
+      console.error("vibeguard_create_key_error", error);
+      return json({ error: "Could not create key." }, 500);
+    }
 
     return json({
       key: raw,
@@ -92,7 +95,10 @@ export async function handleKeys(
       .select("id, name, key_prefix, rate_limit_per_min, monthly_quota, revoked, created_at, total_requests, last_used_at")
       .eq("tenant_id", tid)
       .order("created_at", { ascending: false });
-    if (error) return json({ error: error.message }, 500);
+    if (error) {
+      console.error("vibeguard_list_keys_error", error);
+      return json({ error: "Could not list keys." }, 500);
+    }
     return json({ keys: data, count: data?.length ?? 0 });
   }
 
@@ -106,7 +112,10 @@ export async function handleKeys(
       .eq("tenant_id", tid)
       .select("id")
       .maybeSingle();
-    if (error) return json({ error: error.message }, 500);
+    if (error) {
+      console.error("vibeguard_revoke_key_error", error);
+      return json({ error: "Could not revoke key." }, 500);
+    }
     if (!data) return json({ error: "Key not found." }, 404);
     return json({ revoked: true, key_id: keyId });
   }
@@ -121,13 +130,23 @@ export async function handleVerify(body: Record<string, unknown>, tenant: string
 
   const tid = await tenantId(tenant);
   const hash = await sha256hex(key);
-  const { data, error } = await db().rpc("verify_key", { p_hash: hash, p_cost: cost });
-  if (error) return json({ error: error.message }, 500);
 
-  // Ensure the key belongs to this tenant (prevents cross-tenant probing)
-  if (data?.key_id) {
-    const { data: owner } = await db().from("api_keys").select("tenant_id").eq("id", data.key_id).single();
-    if (owner?.tenant_id !== tid) return json({ valid: false, reason: "key_not_found" });
+  // F7: confirm the key belongs to THIS tenant BEFORE metering it, so a caller
+  // cannot burn another tenant's rate-limit/quota by verifying a key they don't own.
+  const { data: owner, error: ownerErr } = await db()
+    .from("api_keys").select("tenant_id").eq("key_hash", hash).maybeSingle();
+  if (ownerErr) {
+    console.error("vibeguard_verify_owner_lookup_error", ownerErr);
+    return json({ error: "Could not verify key." }, 500);
+  }
+  if (!owner || owner.tenant_id !== tid) {
+    return json({ valid: false, reason: "key_not_found" }, 404);
+  }
+
+  const { data, error } = await db().rpc("verify_key", { p_hash: hash, p_cost: cost });
+  if (error) {
+    console.error("vibeguard_verify_key_error", error);
+    return json({ error: "Could not verify key." }, 500);
   }
 
   const status = data?.valid ? 200 : data?.reason === "rate_limited" ? 429 : data?.reason === "key_not_found" ? 404 : 403;
@@ -141,7 +160,10 @@ export async function handleUsage(tenant: string): Promise<Response> {
     .from("api_keys")
     .select("id, name, key_prefix, revoked, total_requests, last_used_at, monthly_quota, rate_limit_per_min")
     .eq("tenant_id", tid);
-  if (error) return json({ error: error.message }, 500);
+  if (error) {
+    console.error("vibeguard_usage_error", error);
+    return json({ error: "Could not load usage." }, 500);
+  }
 
   const ids = (keys ?? []).map((k) => k.id);
   const monthMap = new Map<string, number>();

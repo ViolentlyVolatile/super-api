@@ -100,7 +100,8 @@ Deno.serve(async (req: Request) => {
 
     return json({ error: `No route: ${req.method} ${path}. GET / for docs.` }, 404);
   } catch (err) {
-    console.error(err);
-    return json({ error: "Internal error", detail: String(err) }, 500);
+    // Log full detail server-side; never leak internals to the caller (F6).
+    console.error("vibeguard_internal_error", err);
+    return json({ error: "Internal error." }, 500);
   }
 });

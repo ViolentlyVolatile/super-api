@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: Manufacturing Toolbox API
+  version: 1.0.0
+  description: >
+    3D print quoting, STL analysis, G-code analysis, CNC estimating, machinist
+    tables (feeds/speeds, ISO 286 fits, threads), tolerance stackups, injection
+    molding & PCB cost estimates, and a materials properties database.
+    All cost endpoints accept overridable rate parameters with sensible defaults.
+servers:
+  - url: https://{project}.supabase.co/functions/v1/toolbox
+paths:
+  /v1/3dp/quote:
+    post:
+      summary: STL to print quote (volume, mass, time, cost)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, description: base64 STL or https URL }
+                material: { type: string, default: PLA, enum: [PLA, PETG, ABS, ASA, TPU, NYLON, RESIN] }
+                price_per_kg: { type: number, default: 25 }
+                infill_pct: { type: number, default: 20 }
+                layer_height_mm: { type: number, default: 0.2 }
+                print_speed_mms: { type: number, default: 60 }
+                electricity_per_kwh: { type: number, default: 0.15 }
+                machine_rate_per_hr: { type: number, default: 1.0 }
+                margin_pct: { type: number, default: 30 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  volume_cm3: { type: number }
+                  mass_g: { type: number }
+                  bbox_mm: { type: array, items: { type: number } }
+                  est_print_time_min: { type: number }
+                  time_confidence: { type: string, enum: [heuristic] }
+                  cost: { type: object, properties: { material: {type: number}, energy: {type: number}, machine: {type: number}, total: {type: number}, suggested_price: {type: number} } }
+  /v1/3dp/analyze:
+    post:
+      summary: STL printability diagnostics
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  watertight: { type: boolean }
+                  non_manifold_edges: { type: integer }
+                  degenerate_triangles: { type: integer }
+                  shells: { type: integer }
+                  triangles: { type: integer }
+                  min_wall_flag: { type: boolean }
+                  printability_score: { type: number, description: 0-100 }
+  /v1/gcode/analyze:
+    post:
+      summary: G-code time, filament, and cost analysis
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  est_time_min: { type: number }
+                  filament_mm: { type: number }
+                  filament_g: { type: number }
+                  material_cost: { type: number }
+                  layers: { type: integer }
+                  slicer_detected: { type: string }
+  /v1/cnc/estimate:
+    post:
+      summary: CNC machining cost range
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [material, stock_mm, qty]
+              properties:
+                material: { type: string, example: AL6061 }
+                stock_mm: { type: array, items: { type: number }, example: [100, 50, 25] }
+                removal_pct: { type: number, default: 50 }
+                tolerance_class: { type: string, enum: [standard, precision, high], default: standard }
+                finish: { type: string, enum: [as_machined, bead_blast, anodize], default: as_machined }
+                qty: { type: integer }
+                shop_rate_per_hr: { type: number, default: 75 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  setup_cost: { type: number }
+                  per_part_range: { type: array, items: { type: number } }
+                  qty_breaks: { type: object }
+  /v1/cnc/feeds-speeds:
+    post:
+      summary: Feeds and speeds recommendation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [material, tool_diameter_mm, operation]
+              properties:
+                material: { type: string }
+                tool_type: { type: string, enum: [hss, carbide], default: carbide }
+                tool_diameter_mm: { type: number }
+                flutes: { type: integer, default: 3 }
+                operation: { type: string, enum: [slot, profile, face, drill] }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rpm: { type: integer }
+                  feed_mm_min: { type: number }
+                  doc_mm: { type: number }
+                  woc_mm: { type: number }
+  /v1/cnc/fits/{size}/{fit}:
+    get:
+      summary: ISO 286 fit limits (e.g. /25/H7g6)
+      parameters:
+        - { name: size, in: path, required: true, schema: { type: number } }
+        - { name: fit, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: hole/shaft limits and clearance range }
+  /v1/cnc/threads/{spec}:
+    get:
+      summary: Thread spec lookup (M8x1.25, 1/4-20, etc.)
+      parameters:
+        - { name: spec, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: tap drill, pitch, minor diameter, class data }
+  /v1/tolerance/stackup:
+    post:
+      summary: Worst-case and RSS tolerance stackup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dims]
+              properties:
+                dims:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      nominal: { type: number }
+                      plus: { type: number }
+                      minus: { type: number }
+                      direction: { type: integer, enum: [1, -1], default: 1 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nominal: { type: number }
+                  worst_case: { type: object }
+                  rss: { type: object }
+                  contributors: { type: array, items: { type: object } }
+  /v1/molding/estimate:
+    post:
+      summary: Injection molding tooling + per-part cost
+      responses:
+        "200": { description: tooling cost, per-part at qty breaks, cycle estimate }
+  /v1/pcb/estimate:
+    post:
+      summary: PCB fab + assembly cost estimate
+      responses:
+        "200": { description: fab and assembly cost range, leadtime class }
+  /v1/materials/search:
+    get:
+      summary: Search materials by name/category
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string } }
+      responses:
+        "200": { description: matching materials with property summaries }
+  /v1/materials/{id}:
+    get:
+      summary: Material properties (density, tensile, modulus, Tm, cost class)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, example: al-6061-t6 } }
+      responses:
+        "200": { description: full property record with source notes }

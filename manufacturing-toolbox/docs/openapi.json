@@ -1,0 +1,199 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Manufacturing Toolbox — 3D Print Quotes, CNC Estimates & Machinist Calculators",
+    "version": "1.0.0",
+    "description": "Eleven manufacturing tools behind one key: 3D-print quotes from STL, mesh printability analysis, G-code time/cost, CNC cost estimates, feeds & speeds, ISO 286 fits, thread specs, tolerance stackups, injection-molding and PCB estimates, and a 60+ entry materials database. Pure compute, stateless — nothing you send is stored. All cost parameters (rates, prices, margins) are caller-configurable with sensible defaults."
+  },
+  "servers": [
+    { "url": "https://nikyyzcmspzsdktxhtae.supabase.co/functions/v1/manufacturing-toolbox" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "health",
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "example": { "status": "ok", "version": "1.0.0" } } } } }
+      }
+    },
+    "/v1/3dp/quote": {
+      "post": {
+        "summary": "3D print quote from STL",
+        "operationId": "quote3dp",
+        "description": "Upload an STL (base64 or URL) and get volume, mass, estimated print time, cost breakdown and a suggested price. Heuristic ±20% — use /v1/gcode/analyze with sliced G-code for accurate times.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "stl_url": "https://example.com/part.stl",
+                "material": "petg",
+                "infill_pct": 30,
+                "layer_height_mm": 0.2,
+                "price_per_kg": 22,
+                "machine_rate_per_hr": 2,
+                "margin_pct": 30,
+                "quantity": 5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote",
+            "content": { "application/json": { "example": {
+              "model": { "volume_cm3": 1, "surface_area_cm2": 6, "bbox_mm": { "x": 10, "y": 10, "z": 10 }, "triangle_count": 12 },
+              "material": { "name": "petg", "density_g_cm3": 1.27, "volume_cm3": 0.8, "mass_g": 1.02 },
+              "print_time_s": 513,
+              "print_time_readable": "8m 33s",
+              "cost_per_unit": { "material": 0.02, "energy": 0, "machine": 0.28, "total": 0.31, "currency": "USD" },
+              "suggested_price_per_unit": 0.4
+            } } }
+          }
+        }
+      }
+    },
+    "/v1/3dp/analyze": {
+      "post": {
+        "summary": "STL mesh printability analysis",
+        "operationId": "analyzeStl",
+        "description": "Watertightness, non-manifold/boundary edges, degenerate triangles, shell count, thin-wall heuristic and a 0-100 printability score.",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "stl_base64": "<base64 STL bytes>" } } } },
+        "responses": { "200": { "description": "Analysis", "content": { "application/json": { "example": {
+          "triangle_count": 12, "format": "binary", "volume_cm3": 1, "surface_area_cm2": 6,
+          "bbox_mm": { "x": 10, "y": 10, "z": 10 },
+          "mesh": { "watertight": true, "non_manifold_edges": 0, "boundary_edges": 0, "degenerate_triangles": 0, "shells": 1, "mean_wall_thickness_mm": 3.333, "thin_wall_warning": false, "printability_score": 100, "issues": [] }
+        } } } } }
+      }
+    },
+    "/v1/gcode/analyze": {
+      "post": {
+        "summary": "G-code time, filament & cost analysis",
+        "operationId": "analyzeGcode",
+        "description": "Parses PrusaSlicer / Cura / Bambu / OrcaSlicer G-code. Uses the slicer's embedded time estimate when present (accurate), else computes from moves. Returns filament length/mass, cost breakdown, layer count and per-feature time split.",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "gcode_url": "https://example.com/part.gcode", "filament_price_per_kg": 25, "energy_price_per_kwh": 0.12 } } } },
+        "responses": { "200": { "description": "Report", "content": { "application/json": { "example": {
+          "time_s": 3600, "time_readable": "1h 0m 0s", "time_source": "slicer_comment", "layer_count": 142,
+          "filament_mm": 4120, "filament_g": 12.29,
+          "cost": { "material": 0.31, "energy": 0.02, "machine": 0, "total": 0.33, "currency": "USD" },
+          "feature_time_split": { "walls": 1400, "infill": 1100, "travel": 460 }
+        } } } } }
+      }
+    },
+    "/v1/cnc/estimate": {
+      "post": {
+        "summary": "CNC machining cost estimate",
+        "operationId": "cncEstimate",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "material": "aluminum", "stock_mm": { "x": 100, "y": 60, "z": 25 }, "removal_pct": 55, "tolerance": "precision", "finish": "anodize", "quantity": 25, "machine_rate_per_hr": 75 } } } },
+        "responses": { "200": { "description": "Estimate", "content": { "application/json": { "example": {
+          "per_part_cost": 38.84, "per_part_range": { "low": 31.07, "high": 50.49 }, "machining_min_per_part": 13.05,
+          "batch_curve": [ { "quantity": 1, "per_part": 220.14 }, { "quantity": 1000, "per_part": 29.57 } ], "currency": "USD"
+        } } } } }
+      }
+    },
+    "/v1/cnc/feeds-speeds": {
+      "post": {
+        "summary": "Feeds & speeds calculator",
+        "operationId": "feedsSpeeds",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "material": "aluminum", "tool": "carbide", "tool_diameter_mm": 10, "flutes": 3, "operation": "profile" } } } },
+        "responses": { "200": { "description": "Cutting parameters", "content": { "application/json": { "example": {
+          "surface_speed": { "sfm": 1000, "m_min": 304.8 }, "rpm": 9702, "chip_load_mm_per_tooth": 0.04,
+          "feed_mm_min": 1164, "depth_of_cut_mm": { "axial": [5, 15], "radial": [1, 3] }
+        } } } } }
+      }
+    },
+    "/v1/cnc/fits/{size}/{fit}": {
+      "get": {
+        "summary": "ISO 286 limits & fits",
+        "operationId": "isoFit",
+        "parameters": [
+          { "name": "size", "in": "path", "required": true, "schema": { "type": "number" }, "example": 25, "description": "Nominal size in mm (0-500)" },
+          { "name": "fit", "in": "path", "required": true, "schema": { "type": "string" }, "example": "H7g6", "description": "Hole+shaft designation, e.g. H7g6, H7k6, H8f7, H11c11" }
+        ],
+        "responses": { "200": { "description": "Limits", "content": { "application/json": { "example": {
+          "nominal_mm": 25, "fit": "H7/g6",
+          "hole": { "designation": "H7", "upper_um": 21, "lower_um": 0, "max_mm": 25.021, "min_mm": 25 },
+          "shaft": { "designation": "g6", "upper_um": -7, "lower_um": -20, "max_mm": 24.993, "min_mm": 24.98 },
+          "fit_type": "clearance", "clearance_um": { "min": 7, "max": 41 }
+        } } } } }
+      }
+    },
+    "/v1/cnc/threads/{spec}": {
+      "get": {
+        "summary": "Thread specifications",
+        "operationId": "threadSpec",
+        "parameters": [
+          { "name": "spec", "in": "path", "required": true, "schema": { "type": "string" }, "example": "M8x1.25", "description": "Metric (M8, M8x1.25) or unified (1%2F4-20, %2310-32) — URL-encode / and #" }
+        ],
+        "responses": { "200": { "description": "Thread data", "content": { "application/json": { "example": {
+          "spec": "M8x1.25", "series": "coarse", "major_diameter_mm": 8, "pitch_mm": 1.25,
+          "pitch_diameter_mm": 7.188, "minor_diameter_internal_mm": 6.647, "tap_drill_mm": 6.75,
+          "tensile_stress_area_mm2": 36.61, "tightening_torque_nm_dry_k02": { "8.8": 25.48, "10.9": 36.46, "12.9": 42.61 }
+        } } } } }
+      }
+    },
+    "/v1/tolerance/stackup": {
+      "post": {
+        "summary": "Tolerance stackup (worst-case + RSS)",
+        "operationId": "stackup",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "dimensions": [
+          { "name": "housing", "nominal": 50, "tolerance": 0.1 },
+          { "name": "bearing", "nominal": 12, "tolerance": 0.05, "direction": -1 },
+          { "name": "shaft", "nominal": 25, "plus": 0.02, "minus": 0.01, "direction": -1 }
+        ] } } } },
+        "responses": { "200": { "description": "Stackup", "content": { "application/json": { "example": {
+          "nominal": 13, "worst_case": { "min": 12.83, "max": 13.17, "total_variation": 0.34 },
+          "rss": { "min": 12.886, "max": 13.114, "plus_minus": 0.1136 },
+          "contributors": [ { "name": "housing", "variance_share_pct": 77.52 } ],
+          "recommendation": "'housing' drives 77.52% of variance — tighten it first."
+        } } } } }
+      }
+    },
+    "/v1/molding/estimate": {
+      "post": {
+        "summary": "Injection molding estimate",
+        "operationId": "moldingEstimate",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "part_volume_cm3": 25, "material": "abs", "cavities": 2, "complexity": 3, "quantity": 50000, "tooling_region": "asia" } } } },
+        "responses": { "200": { "description": "Estimate", "content": { "application/json": { "example": {
+          "tooling_cost": 13340, "tooling_cost_range": { "low": 10005, "high": 18676 }, "cycle_time_s": 27.76,
+          "per_part_at_quantity": 0.5399,
+          "quantity_breaks": [ { "quantity": 10000, "per_part_total": 1.607 }, { "quantity": 100000, "per_part_total": 0.4066 } ]
+        } } } } }
+      }
+    },
+    "/v1/pcb/estimate": {
+      "post": {
+        "summary": "PCB fab + assembly estimate",
+        "operationId": "pcbEstimate",
+        "requestBody": { "required": true, "content": { "application/json": { "example": { "width_mm": 80, "height_mm": 60, "layers": 4, "quantity": 100, "finish": "enig", "assembly": { "smd_components": 120, "tht_components": 8, "unique_parts": 35 } } } } },
+        "responses": { "200": { "description": "Estimate", "content": { "application/json": { "example": {
+          "total_cost": 868.71, "per_board_all_in": 8.69, "leadtime": { "class": "standard", "days": "7-12" }
+        } } } } }
+      }
+    },
+    "/v1/materials/search": {
+      "get": {
+        "summary": "Search materials database",
+        "operationId": "searchMaterials",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "example": "stainless" },
+          { "name": "category", "in": "query", "schema": { "type": "string" }, "example": "aluminum" },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" }, "example": 25 }
+        ],
+        "responses": { "200": { "description": "Matches", "content": { "application/json": { "example": { "count": 7, "results": [ { "id": "ss-304", "name": "Stainless 304", "yield_mpa": 215 } ] } } } } }
+      }
+    },
+    "/v1/materials/{id}": {
+      "get": {
+        "summary": "Get material by id",
+        "operationId": "getMaterial",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "example": "al-6061-t6" } ],
+        "responses": { "200": { "description": "Material", "content": { "application/json": { "example": {
+          "id": "al-6061-t6", "name": "Aluminum 6061-T6", "category": "aluminum", "condition": "T6",
+          "density_g_cm3": 2.7, "tensile_mpa": 310, "yield_mpa": 276, "modulus_gpa": 68.9, "melting_c": 582,
+          "machinability": 190, "cost_class": 2, "tags": ["general purpose", "weldable", "anodizable"]
+        } } } } }
+      }
+    }
+  }
+}

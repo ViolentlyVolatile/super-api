@@ -48,11 +48,8 @@ function authorized(req: Request): boolean {
   }
   const proxySecret = req.headers.get("x-rapidapi-proxy-secret") ?? "";
   if (RAPIDAPI_PROXY_SECRET && proxySecret === RAPIDAPI_PROXY_SECRET) return true;
-  // Bootstrap mode: if neither secret is configured yet, allow (pre-launch).
-  if (
-    (!MASTER_API_KEY || MASTER_API_KEY === "CHANGE_ME_MASTER_KEY") &&
-    !RAPIDAPI_PROXY_SECRET
-  ) return true;
+  // F1: fail closed. No implicit "bootstrap" allow — if no credential is
+  // configured, every request is rejected rather than silently opened.
   return false;
 }
 
@@ -179,6 +176,8 @@ Deno.serve(async (req: Request) => {
 
     return err(404, "not_found", `No route ${req.method} ${path}. See GET / for docs.`);
   } catch (e) {
-    return err(500, "internal_error", e instanceof Error ? e.message : "Unexpected error.");
+    // F6: log internals server-side; return a generic message to the caller.
+    console.error("contact_validation_error", e);
+    return err(500, "internal_error", "Unexpected error.");
   }
 });

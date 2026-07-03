@@ -13,6 +13,23 @@ from .config import get_settings
 
 _WINDOW = 60.0
 _hits: dict[str, deque] = defaultdict(deque)
+_last_sweep = 0.0
+
+
+def _sweep(now: float) -> None:
+    """Evict idle buckets so _hits can't grow unbounded (F8).
+
+    An in-memory dict keyed by API key / user / IP would otherwise keep one
+    deque per distinct caller forever. We drop any bucket that is empty or whose
+    most recent hit is older than the window, at most once per window.
+    """
+    global _last_sweep
+    if now - _last_sweep <= _WINDOW:
+        return
+    _last_sweep = now
+    stale = [k for k, dq in _hits.items() if not dq or now - dq[-1] > _WINDOW]
+    for k in stale:
+        del _hits[k]
 
 
 def _rate_limit(key: str, limit: int) -> None:
@@ -27,6 +44,7 @@ def _rate_limit(key: str, limit: int) -> None:
             headers={"Retry-After": "60"},
         )
     q.append(now)
+    _sweep(now)
 
 
 async def require_api_key(
