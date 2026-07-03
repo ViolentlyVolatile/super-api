@@ -1,0 +1,147 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Contact Validation - Email & Phone",
+    "version": "1.0.0",
+    "description": "Validate emails & phone numbers in one API: syntax, live MX check, disposable-domain detection, typo fixes, role/free-provider flags, 0-100 quality score + E.164 phone formatting and line-type detection for 240+ regions. Batch up to 100 per call. Stateless: nothing stored."
+  },
+  "servers": [
+    { "url": "https://nikyyzcmspzsdktxhtae.supabase.co/functions/v1/contact-validation" }
+  ],
+  "paths": {
+    "/email": {
+      "get": {
+        "summary": "Validate Email",
+        "description": "Full email validation: RFC syntax, live MX lookup, disposable-domain detection (~4k domains, auto-updated daily), free-provider and role-address flags, typo suggestion (did_you_mean), 0-100 quality score and a deliverable verdict (yes/risky/no/unknown).",
+        "operationId": "validateEmail",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "description": "The email address to validate.",
+            "schema": { "type": "string", "example": "john.doe@gmial.com" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "email": "john.doe@gmial.com",
+                  "valid": true,
+                  "score": 70,
+                  "deliverable": "risky",
+                  "reason": "possible_domain_typo",
+                  "syntax": { "valid": true, "local_part": "john.doe", "domain": "gmial.com" },
+                  "domain": { "mx_found": true, "mx_records": ["mail.gmial.com"], "disposable": false, "free_provider": false },
+                  "flags": { "role_address": false, "disposable": false, "free_provider": false },
+                  "did_you_mean": "john.doe@gmail.com"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/phone": {
+      "get": {
+        "summary": "Validate Phone",
+        "description": "Phone validation for 240+ regions via libphonenumber metadata: validity, E.164/international/national formats, country, calling code, and line type (MOBILE, FIXED_LINE, TOLL_FREE, VOIP...). Pass 'country' (ISO-2) as a hint for national-format numbers without +prefix.",
+        "operationId": "validatePhone",
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "query",
+            "required": true,
+            "description": "The phone number to validate. International format (+...) preferred.",
+            "schema": { "type": "string", "example": "+14155552671" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Optional ISO-2 country hint (e.g. US, IN, GB) for numbers in national format.",
+            "schema": { "type": "string", "example": "US" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "phone": "+14155552671",
+                  "valid": true,
+                  "possible": true,
+                  "reason": null,
+                  "e164": "+14155552671",
+                  "international": "+1 415 555 2671",
+                  "national": "(415) 555-2671",
+                  "country": "US",
+                  "calling_code": "+1",
+                  "type": "FIXED_LINE_OR_MOBILE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batch": {
+      "post": {
+        "summary": "Batch Validate (up to 100)",
+        "description": "Validate up to 100 emails and/or phones in ONE request (counts as a single API call - big cost saver for list cleaning). Returns per-item results plus summary counts.",
+        "operationId": "batchValidate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "emails": { "type": "array", "items": { "type": "string" } },
+                  "phones": { "type": "array", "items": { "type": "string" } },
+                  "default_country": { "type": "string" }
+                }
+              },
+              "example": {
+                "emails": ["karan@nexmath.com", "test@mailinator.com"],
+                "phones": ["+14155552671", "9876543210"],
+                "default_country": "IN"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch results",
+            "content": {
+              "application/json": {
+                "example": {
+                  "counts": { "emails": 2, "phones": 2, "emails_deliverable": 1, "phones_valid": 2 },
+                  "emails": [{ "email": "karan@nexmath.com", "valid": true, "score": 100, "deliverable": "yes" }],
+                  "phones": [{ "phone": "+14155552671", "valid": true, "e164": "+14155552671", "country": "US" }]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Service health check. No key required.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "example": { "status": "ok", "version": "1.0.0" } } }
+          }
+        }
+      }
+    }
+  }
+}
