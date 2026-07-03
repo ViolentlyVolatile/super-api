@@ -6,7 +6,9 @@
     "description": "Validate emails & phone numbers in one API: syntax, live MX check, disposable-domain detection, typo fixes, role/free-provider flags, 0-100 quality score + E.164 phone formatting and line-type detection for 240+ regions. Batch up to 100 per call. Stateless: nothing stored."
   },
   "servers": [
-    { "url": "https://nikyyzcmspzsdktxhtae.supabase.co/functions/v1/contact-validation" }
+    {
+      "url": "https://nikyyzcmspzsdktxhtae.supabase.co/functions/v1/contact-validation"
+    }
   ],
   "paths": {
     "/email": {
@@ -20,7 +22,24 @@
             "in": "query",
             "required": true,
             "description": "The email address to validate.",
-            "schema": { "type": "string", "example": "john.doe@gmial.com" }
+            "schema": {
+              "type": "string",
+              "example": "john.doe@gmial.com"
+            }
+          },
+          {
+            "name": "mx",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "true"
+            },
+            "description": "Set mx=false to skip the DNS/deliverability lookup for a faster, network-free syntax + disposable check (returns deliverable=unknown, reason=mx_check_skipped)."
           }
         ],
         "responses": {
@@ -34,9 +53,24 @@
                   "score": 70,
                   "deliverable": "risky",
                   "reason": "possible_domain_typo",
-                  "syntax": { "valid": true, "local_part": "john.doe", "domain": "gmial.com" },
-                  "domain": { "mx_found": true, "mx_records": ["mail.gmial.com"], "disposable": false, "free_provider": false },
-                  "flags": { "role_address": false, "disposable": false, "free_provider": false },
+                  "syntax": {
+                    "valid": true,
+                    "local_part": "john.doe",
+                    "domain": "gmial.com"
+                  },
+                  "domain": {
+                    "mx_found": true,
+                    "mx_records": [
+                      "mail.gmial.com"
+                    ],
+                    "disposable": false,
+                    "free_provider": false
+                  },
+                  "flags": {
+                    "role_address": false,
+                    "disposable": false,
+                    "free_provider": false
+                  },
                   "did_you_mean": "john.doe@gmail.com"
                 }
               }
@@ -56,14 +90,20 @@
             "in": "query",
             "required": true,
             "description": "The phone number to validate. International format (+...) preferred.",
-            "schema": { "type": "string", "example": "+14155552671" }
+            "schema": {
+              "type": "string",
+              "example": "+14155552671"
+            }
           },
           {
             "name": "country",
             "in": "query",
             "required": false,
             "description": "Optional ISO-2 country hint (e.g. US, IN, GB) for numbers in national format.",
-            "schema": { "type": "string", "example": "US" }
+            "schema": {
+              "type": "string",
+              "example": "US"
+            }
           }
         ],
         "responses": {
@@ -101,14 +141,32 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "emails": { "type": "array", "items": { "type": "string" } },
-                  "phones": { "type": "array", "items": { "type": "string" } },
-                  "default_country": { "type": "string" }
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "phones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "default_country": {
+                    "type": "string"
+                  }
                 }
               },
               "example": {
-                "emails": ["karan@nexmath.com", "test@mailinator.com"],
-                "phones": ["+14155552671", "9876543210"],
+                "emails": [
+                  "karan@nexmath.com",
+                  "test@mailinator.com"
+                ],
+                "phones": [
+                  "+14155552671",
+                  "9876543210"
+                ],
                 "default_country": "IN"
               }
             }
@@ -120,9 +178,28 @@
             "content": {
               "application/json": {
                 "example": {
-                  "counts": { "emails": 2, "phones": 2, "emails_deliverable": 1, "phones_valid": 2 },
-                  "emails": [{ "email": "karan@nexmath.com", "valid": true, "score": 100, "deliverable": "yes" }],
-                  "phones": [{ "phone": "+14155552671", "valid": true, "e164": "+14155552671", "country": "US" }]
+                  "counts": {
+                    "emails": 2,
+                    "phones": 2,
+                    "emails_deliverable": 1,
+                    "phones_valid": 2
+                  },
+                  "emails": [
+                    {
+                      "email": "karan@nexmath.com",
+                      "valid": true,
+                      "score": 100,
+                      "deliverable": "yes"
+                    }
+                  ],
+                  "phones": [
+                    {
+                      "phone": "+14155552671",
+                      "valid": true,
+                      "e164": "+14155552671",
+                      "country": "US"
+                    }
+                  ]
                 }
               }
             }
@@ -138,7 +215,14 @@
         "responses": {
           "200": {
             "description": "OK",
-            "content": { "application/json": { "example": { "status": "ok", "version": "1.0.0" } } }
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "ok",
+                  "version": "1.0.0"
+                }
+              }
+            }
           }
         }
       }
