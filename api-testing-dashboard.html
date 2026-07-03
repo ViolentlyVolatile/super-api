@@ -94,7 +94,7 @@ const DEFAULT_APIS = [
     name: "Federal Contract Intelligence",
     base: "https://contract-intel-api-gln8.onrender.com",
     auth: "X-API-Key",
-    note: "Render free tier may cold-start (first call slow). CORS support ships with the next Render deploy — until then browser calls may be blocked.",
+    note: "Render free tier may cold-start (first call slow). Open the dashboard via start-dashboard.bat — not by double-clicking the HTML (Chrome blocks API calls from file:// pages).",
     tests: [
       {name:"Health", method:"GET", path:"/health", expect:200, contains:'"status":"ok"', noAuth:true},
       {name:"Award search", method:"POST", path:"/v1/awards/search", body:{keywords:["radar"],limit:1}, expect:200, contains:'"results"'},
