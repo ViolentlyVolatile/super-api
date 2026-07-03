@@ -60,13 +60,18 @@ const INFO = {
   description:
     "Validate emails (syntax, MX, disposable, role, typo suggestions, 0-100 score) and phone numbers (240+ regions, E.164, line type) in one API. Stateless — nothing stored.",
   endpoints: {
-    "GET /email": "params: email (required)",
+    "GET /email": "params: email (required), mx (optional; mx=false skips the DNS/deliverability lookup for a faster syntax-only check)",
     "GET /phone": "params: phone (required), country (optional ISO-2 hint)",
     "POST /batch":
       `JSON body: { emails: string[], phones: string[] | {phone,country}[], default_country?: string } — max ${BATCH_LIMIT} items total`,
     "GET /health": "health check",
   },
 };
+
+// Fast mode: mx=false / check_mx=false / 0 / no skips the network MX lookup.
+function parseMxFlag(v: string | null): boolean {
+  return !(v === "false" || v === "0" || v === "no");
+}
 
 function subPath(req: Request): string {
   // Path after the function name, regardless of invocation style:
@@ -94,6 +99,7 @@ async function handleBatch(req: Request): Promise<Response> {
   const defaultCountry = typeof body.default_country === "string"
     ? body.default_country
     : undefined;
+  const checkMx = !(body.check_mx === false || body.mx === false); // fast mode skips MX for the whole batch
 
   if (emails.length + phonesRaw.length === 0) {
     return err(400, "empty_batch", "Provide 'emails' and/or 'phones' arrays.");
@@ -107,7 +113,7 @@ async function handleBatch(req: Request): Promise<Response> {
   }
 
   const emailResults = await Promise.all(
-    emails.map((e) => validateEmail(String(e))),
+    emails.map((e) => validateEmail(String(e), { checkMx })),
   );
   const phoneResults = phonesRaw.map((p) => {
     if (p && typeof p === "object" && "phone" in (p as Record<string, unknown>)) {
@@ -146,14 +152,16 @@ Deno.serve(async (req: Request) => {
   try {
     if (path === "/email" && (req.method === "GET" || req.method === "POST")) {
       let email = url.searchParams.get("email") ?? "";
+      let checkMx = parseMxFlag(url.searchParams.get("mx") ?? url.searchParams.get("check_mx"));
       if (!email && req.method === "POST") {
         try {
           const body = await req.json();
           email = typeof body.email === "string" ? body.email : "";
+          if (body.check_mx === false || body.mx === false) checkMx = false;
         } catch { /* fall through */ }
       }
       if (!email) return err(400, "missing_parameter", "Query param 'email' is required.");
-      return json(await validateEmail(email));
+      return json(await validateEmail(email, { checkMx }));
     }
 
     if (path === "/phone" && (req.method === "GET" || req.method === "POST")) {

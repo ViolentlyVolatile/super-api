@@ -62,7 +62,7 @@ async function dohQuery(name: string, type: "MX" | "A"): Promise<DnsAnswer[] | n
     try {
       const res = await fetch(url, {
         headers: { accept: "application/dns-json" },
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(1500),
       });
       if (!res.ok) continue;
       const json = await res.json();
@@ -84,8 +84,8 @@ export interface MxResult {
 }
 
 const mxCache = new Map<string, { at: number; result: MxResult }>();
-const MX_CACHE_TTL_MS = 60 * 60 * 1000; // 1h
-const MX_CACHE_MAX = 5000;
+const MX_CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12h (MX records rarely change)
+const MX_CACHE_MAX = 20000;
 
 export async function lookupDomain(domain: string): Promise<MxResult> {
   const cached = mxCache.get(domain);
@@ -211,7 +211,11 @@ export interface EmailValidation {
   did_you_mean: string | null;
 }
 
-export async function validateEmail(email: string): Promise<EmailValidation> {
+export async function validateEmail(
+  email: string,
+  opts: { checkMx?: boolean } = {},
+): Promise<EmailValidation> {
+  const checkMx = opts.checkMx !== false; // default true
   ensureDisposableFresh(); // fire-and-forget refresh
   const syn = checkSyntax(email);
   const base: EmailValidation = {
@@ -231,7 +235,11 @@ export async function validateEmail(email: string): Promise<EmailValidation> {
   const freeProvider = FREE_PROVIDERS.has(syn.domain);
   const role = ROLE_LOCALS.has(syn.local.toLowerCase());
   const suggestion = suggestDomain(syn.domain);
-  const dns = await lookupDomain(syn.domain);
+  // Fast mode (?mx=false): skip the DNS-over-HTTPS lookup entirely — the only
+  // network call in the request — for callers who just want syntax/disposable.
+  const dns = checkMx
+    ? await lookupDomain(syn.domain)
+    : { mx_found: null, mx_records: [] as string[], a_found: null };
 
   let score = 100;
   let deliverable: EmailValidation["deliverable"] = "yes";
@@ -252,9 +260,9 @@ export async function validateEmail(email: string): Promise<EmailValidation> {
       reason = "dns_lookup_failed";
     }
   } else if (dns.mx_found === null) {
-    score = 60;
+    score = checkMx ? 60 : 80;
     deliverable = "unknown";
-    reason = "dns_lookup_failed";
+    reason = checkMx ? "dns_lookup_failed" : "mx_check_skipped";
   }
 
   if (disposable) {

@@ -13,14 +13,36 @@ from .config import get_settings
 _USER_AGENT = "contract-intel-api/1.0 (+marketplace listing)"
 
 
-def _client() -> httpx.AsyncClient:
-    s = get_settings()
-    return httpx.AsyncClient(
-        timeout=s.upstream_timeout_seconds,
-        headers={"User-Agent": _USER_AGENT},
-        # Public endpoints only; ignore ambient proxy env (breaks in sandboxes/CI).
-        trust_env=False,
-    )
+# A single long-lived client is reused across all upstream calls so we keep
+# TCP + TLS connections warm (keep-alive) instead of paying a fresh handshake
+# on every request. The Recompete scan makes several sequential USAspending
+# calls, so connection reuse is a large latency win there.
+_shared_client: httpx.AsyncClient | None = None
+
+
+def get_client() -> httpx.AsyncClient:
+    global _shared_client
+    if _shared_client is None or _shared_client.is_closed:
+        s = get_settings()
+        _shared_client = httpx.AsyncClient(
+            timeout=s.upstream_timeout_seconds,
+            headers={"User-Agent": _USER_AGENT},
+            # Public endpoints only; ignore ambient proxy env (breaks in sandboxes/CI).
+            trust_env=False,
+            limits=httpx.Limits(
+                max_keepalive_connections=20,
+                max_connections=100,
+                keepalive_expiry=30.0,
+            ),
+        )
+    return _shared_client
+
+
+async def aclose_client() -> None:
+    global _shared_client
+    if _shared_client is not None and not _shared_client.is_closed:
+        await _shared_client.aclose()
+    _shared_client = None
 
 
 def _raise_upstream(source: str, resp: httpx.Response) -> None:
@@ -41,16 +63,14 @@ def _raise_upstream(source: str, resp: httpx.Response) -> None:
 
 async def usaspending_post(path: str, body: dict) -> dict:
     s = get_settings()
-    async with _client() as c:
-        resp = await c.post(f"{s.usaspending_base_url}{path}", json=body)
+    resp = await get_client().post(f"{s.usaspending_base_url}{path}", json=body)
     _raise_upstream("USAspending", resp)
     return resp.json()
 
 
 async def usaspending_get(path: str, params: dict | None = None) -> dict:
     s = get_settings()
-    async with _client() as c:
-        resp = await c.get(f"{s.usaspending_base_url}{path}", params=params or {})
+    resp = await get_client().get(f"{s.usaspending_base_url}{path}", params=params or {})
     _raise_upstream("USAspending", resp)
     return resp.json()
 
@@ -66,7 +86,6 @@ async def sam_get(path: str, params: dict) -> dict:
             "(set FCI_SAM_API_KEY; keys are free at sam.gov > Account Details).",
         )
     params = {**params, "api_key": s.sam_api_key}
-    async with _client() as c:
-        resp = await c.get(f"{s.sam_base_url}{path}", params=params)
+    resp = await get_client().get(f"{s.sam_base_url}{path}", params=params)
     _raise_upstream("SAM.gov", resp)
     return resp.json()
