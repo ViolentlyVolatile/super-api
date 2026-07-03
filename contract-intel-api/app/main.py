@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
@@ -51,6 +52,14 @@ def create_app() -> FastAPI:
         contact={"name": "NexMath", "email": "karan@nexmath.com"},
         license_info={"name": "Data: US public domain; Service: commercial"},
         lifespan=lifespan,
+    )
+    # Allow browser-based tools (docs playgrounds, testing dashboards) to call
+    # the API directly. Auth is still enforced via X-API-Key on every request.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     app.include_router(awards.router)
     app.include_router(recompetes.router)
