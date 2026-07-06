@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: Telegram Channel Intelligence API
+  version: 1.0.1
+  description: >
+    Structured JSON for any PUBLIC Telegram channel — no Telegram account, no
+    API keys, no MTProto. Channel profiles with subscriber counts, recent posts
+    with views/reactions/media/link previews, pagination, and keyword
+    filtering. Sourced exclusively from Telegram's public t.me web preview
+    (logged-out data only).
+servers:
+  - url: https://nikyyzcmspzsdktxhtae.supabase.co/functions/v1/telegram-intel
+security:
+  - ApiKey: []
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+    Channel:
+      type: object
+      properties:
+        username: { type: string, example: durov }
+        url: { type: string, example: "https://t.me/durov" }
+        title: { type: string, example: Pavel Durov }
+        description: { type: string, nullable: true }
+        verified: { type: boolean }
+        photo_url: { type: string, nullable: true }
+        subscribers: { type: integer, nullable: true, example: 11800000 }
+        subscribers_text: { type: string, nullable: true, example: "11.8M" }
+        counters:
+          type: object
+          description: All t.me counters (subscribers, photos, videos, links, files)
+          additionalProperties:
+            type: object
+            properties:
+              text: { type: string }
+              value: { type: integer, nullable: true }
+    Post:
+      type: object
+      properties:
+        id: { type: integer, nullable: true, example: 530 }
+        url: { type: string, nullable: true }
+        date: { type: string, nullable: true, example: "2026-06-16T17:36:14+00:00" }
+        edited: { type: boolean }
+        text: { type: string, nullable: true }
+        views: { type: integer, nullable: true, example: 3530000 }
+        views_text: { type: string, nullable: true, example: "3.53M" }
+        photos: { type: array, items: { type: string } }
+        videos:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string, nullable: true }
+              duration: { type: string, nullable: true }
+        links: { type: array, items: { type: string } }
+        forwarded_from: { type: string, nullable: true }
+        reply_to: { type: string, nullable: true }
+        link_preview:
+          type: object
+          nullable: true
+          properties:
+            url: { type: string, nullable: true }
+            title: { type: string, nullable: true }
+            description: { type: string, nullable: true }
+        reactions:
+          type: array
+          description: Reaction counts (emoji identity is best-effort and may be empty)
+          items:
+            type: object
+            properties:
+              emoji: { type: string }
+              count: { type: integer, nullable: true }
+              count_text: { type: string }
+        reactions_total: { type: integer, nullable: true }
+paths:
+  /health:
+    get:
+      summary: Health check (no auth)
+      security: []
+      responses:
+        "200":
+          description: OK
+  /v1/channel/{username}:
+    get:
+      summary: Channel profile + subscriber count
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+          example: durov
+      responses:
+        "200":
+          description: Channel info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channel: { $ref: "#/components/schemas/Channel" }
+        "404":
+          description: Not a public channel
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /v1/channel/{username}/posts:
+    get:
+      summary: Recent posts (newest first) with keyword filter + pagination
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+          example: telegram
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: before
+          in: query
+          description: Return posts older than this post id (use next_before from prior page)
+          schema: { type: integer }
+        - name: q
+          in: query
+          description: Case-insensitive keyword filter on post text (scans up to 5 pages)
+          schema: { type: string }
+      responses:
+        "200":
+          description: Posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channel: { type: string }
+                  query: { type: string, nullable: true }
+                  count: { type: integer }
+                  pages_scanned: { type: integer }
+                  next_before: { type: integer, nullable: true }
+                  posts:
+                    type: array
+                    items: { $ref: "#/components/schemas/Post" }
+  /v1/channel/{username}/posts/{id}:
+    get:
+      summary: Single post by id
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema: { type: string }
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+          example: 530
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channel: { type: string }
+                  post: { $ref: "#/components/schemas/Post" }
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }

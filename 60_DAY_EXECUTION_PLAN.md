@@ -1,7 +1,8 @@
 # Super_API — 60 APIs in 60 Days: Execution Plan (v4 FINAL)
 
-**Status:** 3/60 shipped · Locked July 3, 2026.
+**Status:** 4/60 shipped · Locked July 3, 2026.
 **v4 change:** Manufacturing = Day 4 ONLY (Manufacturing Toolbox, 11 endpoints, counts as 1). Filament tracker, machine specs DB, model search, DFM checker CUT. All categories pull forward; days 49–60 = 12 open slots.
+**v5 change (July 7, 2026):** Day 5 = Telegram Channel Intelligence (replaces Pincode + IFSC, which moves to the Days 49–60 candidate pool; Pinterest Webscraper considered then parked in candidate pool). India Stack now Days 6–14 (9 APIs).
 
 ## Locked decisions
 - Risk: 🟢 open data + 🟡 public-page scraping only. No anti-bot 🔴 targets. GST = legal route only (GSP/official API).
@@ -14,6 +15,7 @@
 | 1 | FCI — Federal Contract Intelligence | USAspending; live |
 | 2 | Contact Validation | Email + phone |
 | 3 | VibeGuard | Market to vibe-coders only |
+| 4 | Manufacturing Toolbox | 11 endpoints; live on RapidAPI |
 
 ## Operating principles
 - One repo template cloned daily: Supabase Edge Function + RapidAPI listing + OpenAPI spec + dev.to post + testing-dashboard entry.
@@ -30,10 +32,14 @@
 |---|-----|-------|--------|------|
 | 4 | Manufacturing Toolbox | 3DP quote, STL analyze, G-code analyze, CNC estimate, feeds/speeds, ISO fits, threads, tolerance stackup, molding + PCB estimates, materials DB. Caller-configurable rates. | L (spec done) | 🟢 |
 
-### India Stack — Days 5–14 (10 APIs)
+### Day 5 — Telegram Channel Intelligence
+| # | API | v1 scope | Effort | Risk |
+|---|-----|----------|--------|------|
+| 5 | Telegram Channel Intelligence | Public channels via t.me/s/ web preview (logged-out, no API key): channel info + subscribers, recent posts w/ views/reactions/forwards/media, keyword filter. Buyers: crypto, OSINT, marketing. ~1B MAU platform, thin RapidAPI competition. | M | 🟡 |
+
+### India Stack — Days 6–14 (9 APIs)
 | # | API | v1 scope / decision | Effort | Risk |
 |---|-----|---------------------|--------|------|
-| 5 | Pincode + IFSC Unified Lookup | Lat/long + branch data; offline dataset, SLA story | S | 🟢 |
 | 6 | India AQI | City + station level, CPCB normalized | S | 🟢 |
 | 7 | Mutual Fund NAV + Returns | AMFI NAVAll + computed returns/SIP math | S | 🟢 |
 | 8 | Mandi (Agri) Prices | Agmarknet/data.gov.in, clean commodity+market schema | M | 🟢 |
@@ -97,8 +103,8 @@
 ### Days 49–60 — 12 OPEN SLOTS
 To be decided around Day 40 based on what's actually selling. Candidate pools:
 - v2 expansions of winners (e.g., Toolbox DFM endpoint, EDGAR 13F, more MCA depth)
-- More India (train status, e-challan-adjacent, regional language tools)
-- Revived kills if demand signals appear (layoffs tracker, hiring signals)
+- More India (Pincode + IFSC Unified Lookup [moved from Day 5], train status, e-challan-adjacent, regional language tools)
+- Revived kills if demand signals appear (layoffs tracker, hiring signals, Pinterest Webscraper [🔴 — only via wrapper provider, cost model first])
 - New ideas from dev.to/RapidAPI feedback during the run
 
 ## Weekly rhythm & marketing
