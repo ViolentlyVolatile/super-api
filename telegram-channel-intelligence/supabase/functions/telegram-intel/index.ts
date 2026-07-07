@@ -371,4 +371,21 @@ Deno.serve(async (req: Request) => {
       posts = posts.concat(older);
       pages++;
     }
-    const filtered = q ? posts.filter((p) => p.text?.toLowerC
+    const filtered = q ? posts.filter((p) => p.text?.toLowerCase().includes(q)) : posts;
+    const out = filtered.slice(0, limit);
+    const oldestScanned = posts[posts.length - 1]?.id ?? null;
+    return json({
+      channel: username,
+      query: q,
+      count: out.length,
+      pages_scanned: pages,
+      next_before: oldestScanned && oldestScanned > 1 ? oldestScanned : null,
+      posts: out,
+    });
+  } catch (e) {
+    if ((e as Error).name === "AbortError") {
+      return err(504, "upstream_timeout", "t.me did not respond in time. Try again.");
+    }
+    return err(502, "upstream_error", `Failed to fetch from t.me: ${(e as Error).message}`);
+  }
+});

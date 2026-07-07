@@ -28,6 +28,21 @@ GET /v1/channel/telegram/posts?q=update&limit=5
 → { "count": 5, "next_before": 429, "posts": [ { "id": 449, "views": 1170000, "text": "...", ... } ] }
 ```
 
+## Known-good example channels
+
+Use these public channels to try the API (all verified working):
+
+| Username | What it is | Subscribers |
+|---|---|---|
+| `durov` | Telegram founder Pavel Durov | ~11.8M |
+| `telegram` | Official Telegram channel | ~13M |
+| `toncoin` | TON blockchain | ~7.4M |
+| `cointelegraph` | Crypto news | ~352K |
+| `bloomberg` | Bloomberg news | ~161K |
+| `whale_alert` | Large crypto transaction alerts | ~13.6K |
+
+Note on 404s: a `404 channel_not_found` means the username is **not a public Telegram channel** — not an API error. Many well-known brands either have no Telegram channel or use a different handle (e.g. `nasa`, `cnn`, `binance` are not public channels under those exact names). Pass a real public channel's `t.me/<username>` handle, without the `@`.
+
 ## Architecture
 
 Supabase Edge Function (Deno), zero dependencies, stateless. Fetches `t.me/s/{username}` (logged-out public preview), parses with regex, 120s in-memory cache per warm isolate, max 5 upstream pages per request. Fail-closed auth (master key or RapidAPI proxy secret), env-first with `TCI_MASTER_API_KEY` / `TCI_RAPIDAPI_PROXY_SECRET` (repo copy ships `CHANGE_ME`).
